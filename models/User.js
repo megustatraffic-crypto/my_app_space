@@ -1,31 +1,36 @@
 // models/User.js
-import mongoose from 'mongoose';
+import db from '../db.js';
 
-const PlotSchema = new mongoose.Schema({
-  status: { type: String, enum: ['empty','growing','grown'], default: 'empty' },
-  plantedAt: { type: Number, default: 0 }
-});
-
-const UserSchema = new mongoose.Schema({
-  telegramId: { type: String, index: true, unique: true, sparse: true },
-  name: String,
-  frags: { type: Number, default: 10 },
-  energy: { type: Number, default: 5 },
-  level: { type: Number, default: 1 },
-  farmSize: { type: Number, default: 3 }, // 3x3 initial
-  plots: { type: [PlotSchema], default: [] },
-  inventory: { type: Map, of: Number, default: {} },
-  lastDaily: { type: Date, default: null },
-  createdAt: { type: Date, default: Date.now }
-});
-
-UserSchema.methods.ensurePlots = function(){
-  const needed = this.farmSize * this.farmSize;
-  if(this.plots.length < needed){
-    while(this.plots.length < needed) this.plots.push({ status: 'empty' });
-  } else if(this.plots.length > needed){
-    this.plots = this.plots.slice(0, needed);
+class User {
+  constructor(obj) {
+    this.id = obj.id || Date.now().toString();
+    this.telegramId = obj.telegramId || null;
+    this.name = obj.name || 'Player';
+    this.frags = obj.frags || 0;
+    this.plots = obj.plots || [];
   }
-};
 
-export default mongoose.models.User || mongoose.model('User', UserSchema);
+  static async findOne(query) {
+    await db.read();
+    return db.data.users.find(u =>
+      Object.keys(query).every(k => u[k] == query[k])
+    ) || null;
+  }
+
+  async save() {
+    await db.read();
+    const existing = db.data.users.find(u => u.id === this.id);
+    if (existing) {
+      Object.assign(existing, this);
+    } else {
+      db.data.users.push(this);
+    }
+    await db.write();
+  }
+
+  ensurePlots() {
+    if (!this.plots.length) this.plots = [ { id: 1, crop: null, ready: false } ];
+  }
+}
+
+export default User;
