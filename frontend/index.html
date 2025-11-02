@@ -4,106 +4,108 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Cosmic Farm</title>
-<link href="styles.css" rel="stylesheet"/>
-<link href="manifest.json" rel="manifest">
+
+<link rel="stylesheet" href="styles.css">
+
+<link rel="manifest" href="manifest.json">
 <link rel="shortcut icon" href="icon512.png">
+
 <script>
-  if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js");
-  }
+}
 </script>
 </head>
+
 <body>
-
 <div id="app">
-  <header class="topbar">
-    <div class="brand">🌌 <strong>Cosmic Farm</strong></div>
-    <div class="usermini" id="user_mini">
-      <img id="mini_avatar" src="" alt="" class="mini-avatar hidden"/>
-      <div id="mini_info">guest</div>
-    </div>
-  </header>
 
-  <nav class="menu">
-    <button class="menu-btn" data-panel="farm">🌱 Farm</button>
-    <button class="menu-btn" data-panel="shop">🛒 Shop</button>
-    <button class="menu-btn" data-panel="drones">🤖 Drones</button>
-    <button class="menu-btn" data-panel="quests">📜 Quests</button>
-    <button class="menu-btn" data-panel="profile">👤 Profile</button>
-    <button class="menu-btn" data-panel="leaders">🏆 Leaders</button>
-  </nav>
-
-  <main class="panel-wrap">
-    <!-- FARM -->
-    <section id="panel_farm" class="panel">
-      <div class="panel-row top">
-        <div class="status">Frags: <span id="frags_count">0</span></div>
-        <div class="farm-level">Farm level: <span id="farm_level">1</span></div>
-      </div>
-
-      <div id="farm_visual" class="farm-visual"></div>
-
-      <div id="farm_grid" class="farm-grid"></div>
-      <div class="help">Tap an empty tile to plant. Tap grown crop to harvest.</div>
-    </section>
-
-    <!-- SHOP -->
-    <section id="panel_shop" class="panel hidden">
-      <h2>🛒 Shop</h2>
-      <div id="shop_list"></div>
-    </section>
-
-    <!-- DRONES -->
-    <section id="panel_drones" class="panel hidden">
-      <h2>🤖 Drones</h2>
-      <div id="drones_area"></div>
-      <p class="muted">Drones automatically harvest ready crops every X seconds.</p>
-    </section>
-
-    <!-- QUESTS -->
-    <section id="panel_quests" class="panel hidden">
-      <h2>📜 Quests</h2>
-      <div id="quests_list"></div>
-    </section>
-
-    <!-- PROFILE -->
-    <section id="panel_profile" class="panel hidden">
-      <h2>👤 Profile</h2>
-      <div class="profile-row">
-        <img id="profile_avatar" class="profile-avatar hidden" src="" alt="avatar"/>
-        <div class="profile-info">
-          <div><b id="profile_name">Guest</b></div>
-          <div>Frags: <span id="profile_frags">0</span></div>
-          <div>Level: <span id="profile_level">1</span></div>
+    <header class="topbar">
+        <div class="brand">🌌 <b>Cosmic Farm</b></div>
+        <div class="season" id="season_label"></div>
+        <div class="usermini">
+            <img id="mini_avatar" class="mini-avatar hidden">
+            <span id="mini_info">guest</span>
         </div>
-      </div>
+    </header>
 
-      <div class="profile-edit">
-        <label>Avatar URL:</label>
-        <input id="input_avatar" placeholder="https://..." />
-        <label>Name:</label>
-        <input id="input_name" placeholder="Player name" />
-        <button id="btn_save_profile" class="small">Save Profile</button>
-      </div>
+    <nav class="menu">
+        <button class="menu-btn" data-panel="farm">🌱 Farm</button>
+        <button class="menu-btn" data-panel="shop">🛒 Shop</button>
+        <button class="menu-btn" data-panel="drones">🤖 Drones</button>
+        <button class="menu-btn" data-panel="quests">📜 Quests</button>
+        <button class="menu-btn" data-panel="profile">👤 Profile</button>
+        <button class="menu-btn" data-panel="leaders">🏆 Rating</button>
+    </nav>
 
-      <div class="profile-actions">
-        <button id="btn_reset" class="danger small">Reset Progress</button>
-      </div>
-    </section>
+    <main class="panel-wrap">
+       
+        <!-- FARM -->
+        <section id="panel_farm" class="panel active">
+            <h2>🌱 Farm</h2>
+            <div class="statusbar">
+                <span>Frags: <span id="frags_count">0</span></span>
+                <span>Level: <span id="farm_level">1</span></span>
+                <span>Drones: <span id="drone_count">0</span></span>
+            </div>
 
-    <!-- LEADERS -->
-    <section id="panel_leaders" class="panel hidden">
-      <h2>🏆 Leaders</h2>
-      <div id="leaders_list"></div>
-    </section>
-  </main>
+            <div id="farm_visual" class="farm-visual"></div>
 
-  <footer class="footer">Cosmic Farm — PWA, offline mode, auto-save, quests, drones ✅</footer>
+            <div class="farm-grid" id="farm_grid"></div>
+            <div class="help">Tap to plant — tap grown crop to harvest.</div>
+        </section>
+
+        <!-- SHOP -->
+        <section id="panel_shop" class="panel">
+            <h2>🛒 Shop</h2>
+            <div id="shop_list"></div>
+        </section>
+
+        <!-- DRONES -->
+        <section id="panel_drones" class="panel">
+            <h2>🤖 Drones</h2>
+            <div id="drones_area"></div>
+            <p class="muted">Drones auto-harvest ready crops every few seconds.</p>
+        </section>
+
+        <!-- QUESTS -->
+        <section id="panel_quests" class="panel">
+            <h2>📜 Quests</h2>
+            <div id="quests_list"></div>
+        </section>
+
+        <!-- PROFILE -->
+        <section id="panel_profile" class="panel">
+            <h2>👤 Profile</h2>
+            <img id="profile_avatar" class="profile-avatar hidden">
+            <div><b>Name:</b> <span id="profile_name">Guest</span></div>
+            <div><b>Frags:</b> <span id="profile_frags">0</span></div>
+            <div><b>Level:</b> <span id="profile_level">1</span></div>
+
+            <div class="profile-edit">
+                <label>Avatar URL</label>
+                <input id="input_avatar" placeholder="https://...">
+                <label>Name</label>
+                <input id="input_name" placeholder="Your name">
+                <button id="btn_save_profile">Save</button>
+            </div>
+
+            <button class="danger" id="btn_reset">Reset Progress</button>
+        </section>
+
+        <!-- LEADERS -->
+        <section id="panel_leaders" class="panel">
+            <h2>🏆 Global Rating</h2>
+            <div id="leaders_list"></div>
+        </section>
+
+    </main>
+
+    <footer>Cosmic Farm — PWA, Seasons, Drones, Shops, Quests ✅</footer>
 </div>
 
 <script src="telegram-init.js"></script>
 <script src="api.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
