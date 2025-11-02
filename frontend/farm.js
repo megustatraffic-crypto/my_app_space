@@ -1,56 +1,86 @@
-import { apiGetFarm, apiPlant, apiHarvest } from "./api.js";
-import { telegramLogin } from "./telegram-init.js";
+// ✅ farm.js — рабочая логика фермы
 
-const farm = document.getElementById("farm");
-const usernameEl = document.getElementById("username");
-const fragsEl = document.getElementById("frags");
+// глобальный объект состояния
+let state = {
+    frags: 0,
+    level: 1,
+    tiles: ["empty","empty","empty","empty","empty","empty","empty","empty","empty"],
+    lastSave: Date.now(),
+    drones: 0
+};
 
-let token = localStorage.getItem("token");
-let user = null;
-let state = [];
-
-async function init(){
-    if(!token){
-        user = await telegramLogin();
-        token = localStorage.getItem("token");
-    }
-    loadFarm();
+// сохраняем в localStorage
+function save() {
+    localStorage.setItem("cf_state", JSON.stringify(state));
 }
 
-async function loadFarm(){
-    const res = await apiGetFarm(token);
-    user = res.user;
-    state = res.plots;
-
-    usernameEl.innerText = "👤 " + user.name;
-    fragsEl.innerText = "💎 Frags: " + user.frags;
-
-    render();
+// загружаем
+function load() {
+    const data = localStorage.getItem("cf_state");
+    if (data) state = JSON.parse(data);
 }
 
-function render(){
-    farm.innerHTML = "";
-    state.forEach((plot, idx)=>{
-        const div = document.createElement("div");
-        div.className = "plot";
+load();
 
-        if(plot.state === "empty") div.innerText = "🕳 empty";
-        if(plot.state === "growing") div.innerText = "🌱 growing";
-        if(plot.state === "grown") div.innerText = "✅ ready";
+// UI элементы
+const farmGrid = document.getElementById("farm_grid");
+const statusBar = document.getElementById("status_bar");
 
-        div.onclick = () => clickPlot(idx, plot.state);
-        farm.appendChild(div);
+// рисуем ферму
+function renderFarm() {
+    statusBar.innerHTML = `Frags: ${state.frags} | Level: ${state.level}`;
+
+    farmGrid.innerHTML = "";
+
+    state.tiles.forEach((tile, index) => {
+        const el = document.createElement("div");
+        el.className = "tile";
+
+        if (tile === "empty") el.innerHTML = "⬛";
+        if (tile === "growing") el.innerHTML = "🌱";
+        if (tile === "grown") el.innerHTML = "✅";
+
+        el.onclick = () => handleTileClick(index);
+        farmGrid.appendChild(el);
     });
 }
 
-async function clickPlot(i, st){
-    if(st === "empty"){
-        await apiPlant(token, i);
+// логика нажатия
+function handleTileClick(i) {
+    // посадка
+    if (state.tiles[i] === "empty") {
+        state.tiles[i] = "growing";
+
+        // через 5 сек → становится готовым
+        setTimeout(() => {
+            state.tiles[i] = "grown";
+            save();
+            renderFarm();
+        }, 5000);
     }
-    if(st === "grown"){
-        await apiHarvest(token, i);
+
+    // сбор урожая
+    else if (state.tiles[i] === "grown") {
+        state.frags++;
+        state.tiles[i] = "empty";
     }
-    loadFarm();
+
+    save();
+    renderFarm();
 }
 
-init();
+// авто-дроны
+setInterval(() => {
+    if (state.drones > 0) {
+        for (let i = 0; i < state.tiles.length; i++) {
+            if (state.tiles[i] === "grown") {
+                state.frags++;
+                state.tiles[i] = "empty";
+            }
+        }
+        save();
+        renderFarm();
+    }
+}, 3000);
+
+renderFarm();
