@@ -1,12 +1,3 @@
-{
-  "name":"Cosmic Farm",
-  "short_name":"Farm",
-  "start_url":"./index.html",
-  "display":"standalone",
-  "background_color":"#000814",
-  "theme_color":"#00c9ff",
-  "icons":[
-    { "src":"icon192.png","sizes":"192x192","type":"image/png" },
-    { "src":"icon512.png","sizes":"512x512","type":"image/png" }
-  ]
-}
+// safe wrapper so code runs in browser if Telegram undefined
+window.Telegram = window.Telegram || {};
+Telegram.WebApp = Telegram.WebApp || { initDataUnsafe: null, expand(){}, close(){} };
