@@ -1,110 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
 <title>Cosmic Farm</title>
-<link rel="stylesheet" href="styles.css" />
-
-<style>
-body {
-    margin: 0;
-    padding: 0;
-    background: radial-gradient(circle at top, #0b0f29, #000);
-    font-family: 'Orbitron', sans-serif;
-    color: white;
-    overflow: hidden;
-}
-
-.app {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.header {
-    text-align: center;
-    padding: 10px 0;
-    font-size: 20px;
-}
-
-.status {
-    text-align: center;
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.farm-grid {
-    display: flex;
-    flex-wrap: wrap;
-    width: 300px;
-    margin: 0 auto;
-    margin-top: 10px;
-}
-
-.tile {
-    width: 90px;
-    height: 90px;
-    margin: 5px;
-    border: 2px solid #4455ff;
-    background: #101a3d;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.tile:hover {
-    transform: scale(1.1);
-    border-color: #6e8dff;
-}
-
-.menu {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    background: #050a1e;
-    border-top: 2px solid #1b45ff;
-}
-
-.menu a {
-    flex: 1;
-    text-align: center;
-    padding: 12px;
-    font-size: 18px;
-    color: white;
-    text-decoration: none;
-    border-right: 1px solid #1b45ff;
-}
-
-.menu a:last-child {
-    border-right: none;
-}
-
-.menu a:hover {
-    background: #1b45ff;
-}
-</style>
-
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <div class="app">
-
     <div class="header">🌌 COSMIC FARM</div>
 
-    <!-- Статус -->
     <div class="status" id="status_bar">Loading...</div>
 
-    <!-- Ферма -->
     <div class="farm-grid" id="farm_grid"></div>
 
-    <!-- Меню -->
+    <div class="season" id="season_box"></div>
+
     <div class="menu">
         <a href="farm.html">🌱 Farm</a>
         <a href="shop.html">🏪 Shop</a>
