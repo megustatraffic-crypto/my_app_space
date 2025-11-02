@@ -1,94 +1,41 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cosmic Farm</title>
-<link rel="stylesheet" href="styles.css"/>
-<link rel="manifest" href="manifest.json"/>
-<script>
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js').catch(()=>{}); }
-</script>
+<link rel="stylesheet" href="styles.css" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
+
 <body>
 <div id="app">
-  <header class="topbar">
-    <div class="brand">🌌 <b>Cosmic Farm</b></div>
-    <div class="season" id="season_label">Season</div>
-    <div class="usermini">
-      <img id="mini_avatar" class="mini-avatar hidden" />
-      <span id="mini_info">guest</span>
-    </div>
-  </header>
 
-  <nav class="menu">
-    <button class="menu-btn" data-panel="farm">🌱 Farm</button>
-    <button class="menu-btn" data-panel="shop">🛒 Shop</button>
-    <button class="menu-btn" data-panel="drones">🤖 Drones</button>
-    <button class="menu-btn" data-panel="quests">📜 Quests</button>
-    <button class="menu-btn" data-panel="profile">👤 Profile</button>
-    <button class="menu-btn" data-panel="leaders">🏆 Leaders</button>
-  </nav>
+  <div class="top-bar">
+    <span id="userName">Guest</span>
+    <span id="userStats"></span>
+  </div>
 
-  <main class="panel-wrap">
-    <section id="panel_farm" class="panel active">
-      <h2>🌱 Farm</h2>
-      <div class="statusbar">
-        <span>Frags: <b id="frags_count">0</b></span>
-        <span>Level: <b id="farm_level">1</b></span>
-        <span>Drones: <b id="drone_count">0</b></span>
-      </div>
-      <div id="farm_visual" class="farm-visual"></div>
-      <div id="farm_grid" class="farm-grid"></div>
-      <div class="help">Tap a tile to plant. Tap grown crop to harvest.</div>
-      <div id="drone_layer"></div>
-    </section>
+  <h2 class="section-title">🌱 Farm</h2>
+  <p class="subtitle" id="farmDesc"></p>
 
-    <section id="panel_shop" class="panel">
-      <h2>🛒 Shop</h2>
-      <div id="shop_list"></div>
-    </section>
+  <div id="farmGrid" class="farm-grid"></div>
 
-    <section id="panel_drones" class="panel">
-      <h2>🤖 Drones</h2>
-      <div id="drones_area"></div>
-      <p class="muted">Drones auto-harvest ready crops on interval.</p>
-    </section>
+  <p class="hint">Tap a tile to plant. Tap grown crop to harvest.</p>
 
-    <section id="panel_quests" class="panel">
-      <h2>📜 Quests</h2>
-      <div id="quests_list"></div>
-    </section>
+  <div class="menu">
+    <button class="menu-btn" onclick="switchTab('farm')">🌱 Farm</button>
+    <button class="menu-btn" onclick="switchTab('shop')">🏪 Shop</button>
+    <button class="menu-btn" onclick="switchTab('drones')">🤖 Drones</button>
+    <button class="menu-btn" onclick="switchTab('quests')">📜 Quests</button>
+    <button class="menu-btn" onclick="switchTab('profile')">👤 Profile</button>
+    <button class="menu-btn" onclick="switchTab('leaders')">🏆 Leaders</button>
+  </div>
 
-    <section id="panel_profile" class="panel">
-      <h2>👤 Profile</h2>
-      <img id="profile_avatar" class="profile-avatar hidden"/>
-      <div><b id="profile_name">Guest</b></div>
-      <div>Frags: <span id="profile_frags">0</span></div>
-      <div>Level: <span id="profile_level">1</span></div>
+  <div id="tabContent"></div>
 
-      <div class="profile-edit">
-        <label>Avatar URL</label>
-        <input id="input_avatar" placeholder="https://..."/>
-        <label>Name</label>
-        <input id="input_name" placeholder="Player"/>
-        <button id="btn_save_profile" class="small">Save Profile</button>
-      </div>
-
-      <button id="btn_reset" class="danger">Reset Progress</button>
-    </section>
-
-    <section id="panel_leaders" class="panel">
-      <h2>🏆 Global Leaders</h2>
-      <div id="leaders_list"></div>
-    </section>
-  </main>
-
-  <footer>Cosmic Farm — PWA, Seasons, Drones, Quests, Shop</footer>
 </div>
 
-<script src="telegram-init.js"></script>
-<script src="api.js"></script>
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
