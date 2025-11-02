@@ -1,27 +1,21 @@
-// routes/shop.js (simple server-side hook - does not validate payments)
-import express from 'express';
-import User from '../models/User.js';
+// routes/shop.js
+import express from "express";
+import User from "../models/User.js";
 const router = express.Router();
 
-router.post('/buy', async (req,res)=>{
-  const { user_id, itemId } = req.body;
-  if(!user_id || !itemId) return res.json({ ok:false, error:"user_id and itemId required" });
-  const user = await User.findOne({ user_id });
-  if(!user) return res.json({ ok:false, error:"user not found" });
+router.post("/buy/drone", async (req, res) => {
+  const { telegramId } = req.body;
+  const user = User.findByTelegram(telegramId);
 
-  // simple server-side apply
-  if(itemId === 'drone_1'){
-    user.drones = (user.drones||0) + 1;
-    await User.findOneAndUpdate({ user_id }, user);
-    return res.json({ ok:true, user });
-  }
-  if(itemId === 'farm_up'){
-    user.level = Math.min(5, (user.level||1)+1);
-    await User.findOneAndUpdate({ user_id }, user);
-    return res.json({ ok:true, user });
-  }
-  // other items...
-  res.json({ ok:false, error:"unknown item" });
+  if (user.frags < 10)
+    return res.json({ error: "Not enough frags" });
+
+  user.frags -= 10;
+  user.drones += 1;
+  user.quests.dronesBought++;
+
+  await User.save(telegramId, user);
+  res.json({ success: true, drones: user.drones, frags: user.frags });
 });
 
 export default router;
