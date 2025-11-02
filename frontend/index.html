@@ -3,9 +3,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cosmic Farm — WebApp</title>
+<title>Cosmic Farm</title>
 <link href="styles.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+<link href="manifest.json" rel="manifest">
+<link rel="shortcut icon" href="icon512.png">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js");
+  }
+</script>
 </head>
 <body>
 
@@ -27,17 +33,12 @@
     <button class="menu-btn" data-panel="leaders">🏆 Leaders</button>
   </nav>
 
-  <!-- PANELS -->
   <main class="panel-wrap">
     <!-- FARM -->
     <section id="panel_farm" class="panel">
       <div class="panel-row top">
         <div class="status">Frags: <span id="frags_count">0</span></div>
         <div class="farm-level">Farm level: <span id="farm_level">1</span></div>
-        <div class="controls">
-          <button id="btn_collect_all" class="small">Collect All</button>
-          <button id="btn_save" class="small">Save</button>
-        </div>
       </div>
 
       <div id="farm_visual" class="farm-visual"></div>
@@ -54,7 +55,7 @@
 
     <!-- DRONES -->
     <section id="panel_drones" class="panel hidden">
-      <h2>🤖 Drones (Auto-harvest)</h2>
+      <h2>🤖 Drones</h2>
       <div id="drones_area"></div>
       <p class="muted">Drones automatically harvest ready crops every X seconds.</p>
     </section>
@@ -78,7 +79,7 @@
       </div>
 
       <div class="profile-edit">
-        <label>Avatar URL (png/jpg):</label>
+        <label>Avatar URL:</label>
         <input id="input_avatar" placeholder="https://..." />
         <label>Name:</label>
         <input id="input_name" placeholder="Player name" />
@@ -92,12 +93,12 @@
 
     <!-- LEADERS -->
     <section id="panel_leaders" class="panel hidden">
-      <h2>🏆 Global Leaders</h2>
+      <h2>🏆 Leaders</h2>
       <div id="leaders_list"></div>
     </section>
   </main>
 
-  <footer class="footer">Cosmic Farm — demo · saves to your account (if backend available)</footer>
+  <footer class="footer">Cosmic Farm — PWA, offline mode, auto-save, quests, drones ✅</footer>
 </div>
 
 <script src="telegram-init.js"></script>
