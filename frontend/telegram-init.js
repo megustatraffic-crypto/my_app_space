@@ -1,22 +1,16 @@
-import { apiTelegramLogin } from "./api.js";
+// minimal Telegram WebApp initializer
+window.TG = null;
+window.TG_READY = false;
 
-export async function telegramLogin(){
-    return new Promise(async resolve => {
-        if(!window.Telegram || !Telegram.WebApp){
-            alert("Run inside Telegram Mini App!");
-            resolve(null);
-            return;
-        }
-
-        const initData = Telegram.WebApp.initData;
-        const res = await apiTelegramLogin(initData);
-
-        if(res && res.token){
-            localStorage.setItem("token", res.token);
-            localStorage.setItem("userName", res.user.name);
-            resolve(res.user);
-        } else {
-            resolve(null);
-        }
-    });
-}
+(function init(){
+  try {
+    if(window.Telegram && Telegram.WebApp){
+      window.TG = Telegram.WebApp;
+      TG.expand();
+      TG_READY = true;
+    }
+  } catch(e){
+    // not in TG client
+    TG_READY = false;
+  }
+})();
