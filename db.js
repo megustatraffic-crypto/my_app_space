@@ -5,9 +5,20 @@ import { join } from 'path';
 import fs from 'fs';
 
 const file = join(process.cwd(), 'db.json');
-if(!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({ users: [] }, null, 2));
+
+// если файла нет — создаём
+if (!fs.existsSync(file)) {
+  fs.writeFileSync(file, JSON.stringify({ users: [] }, null, 2));
+}
+
+// создаём адаптер и базу
 const adapter = new JSONFile(file);
-const db = new Low(adapter, { users: [] });
+const db = new Low(adapter);
+
+// читаем базу
 await db.read();
-if(!db.data) db.data = { users: [] };
+
+// если структура пустая — создаём
+if (!db.data) db.data = { users: [] };
+
 export default db;
