@@ -1,151 +1,108 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cosmic Farm</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cosmic Farm — WebApp</title>
+<link href="styles.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
-
-<style>
-/* --- СТИЛИ ОСТАЮТСЯ ТЕ ЖЕ (не меняем) --- */
-body {
-  margin:0; padding:0;
-  font-family:'Orbitron', sans-serif;
-  background:#000814; color:white;
-  overflow:hidden;
-}
-#app { width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; padding-top:20px; }
-.header { text-align:center; }
-.header h1 { margin:0; }
-.menu { display:grid; grid-template-columns:repeat(3,100px); grid-gap:10px; margin-top:10px; }
-.menu-btn { width:100px; height:100px; background:#001d3d; border:2px solid #00c9ff; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-.menu-btn:hover { background:#003566; transform:scale(1.05); }
-.panel { width:100%; height:58vh; background:#001d3d; border:2px solid #00c9ff; border-radius:10px; margin-top:15px; padding:15px; overflow-y:auto;}
-.hidden { display:none; }
-.farm-grid { display:grid; grid-template-columns:repeat(3,90px); grid-gap:12px; justify-content:center; margin-top:15px; }
-.tile { width:90px; height:90px; border:2px solid #00c9ff; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-.tile:hover { transform:scale(1.08); border-color:#61efff; }
-</style>
 </head>
-
 <body>
+
 <div id="app">
+  <header class="topbar">
+    <div class="brand">🌌 <strong>Cosmic Farm</strong></div>
+    <div class="usermini" id="user_mini">
+      <img id="mini_avatar" src="" alt="" class="mini-avatar hidden"/>
+      <div id="mini_info">guest</div>
+    </div>
+  </header>
 
-  <div class="header">
-    <h1>🌌 COSMIC FARM</h1>
-    <div id="user_bar">Frags: 0</div>
-  </div>
+  <nav class="menu">
+    <button class="menu-btn" data-panel="farm">🌱 Farm</button>
+    <button class="menu-btn" data-panel="shop">🛒 Shop</button>
+    <button class="menu-btn" data-panel="drones">🤖 Drones</button>
+    <button class="menu-btn" data-panel="quests">📜 Quests</button>
+    <button class="menu-btn" data-panel="profile">👤 Profile</button>
+    <button class="menu-btn" data-panel="leaders">🏆 Leaders</button>
+  </nav>
 
-  <div class="menu">
-    <div class="menu-btn" onclick="openPanel('farm')">🌱 Farm</div>
-    <div class="menu-btn" onclick="openPanel('shop')">🛒 Shop</div>
-    <div class="menu-btn" onclick="openPanel('inv')">🎒 Inventory</div>
-    <div class="menu-btn" onclick="openPanel('quests')">🚀 Quests</div>
-    <div class="menu-btn" onclick="openPanel('profile')">👤 Profile</div>
-    <div class="menu-btn" onclick="openPanel('tutorial')">❓ Help</div>
-  </div>
+  <!-- PANELS -->
+  <main class="panel-wrap">
+    <!-- FARM -->
+    <section id="panel_farm" class="panel">
+      <div class="panel-row top">
+        <div class="status">Frags: <span id="frags_count">0</span></div>
+        <div class="farm-level">Farm level: <span id="farm_level">1</span></div>
+        <div class="controls">
+          <button id="btn_collect_all" class="small">Collect All</button>
+          <button id="btn_save" class="small">Save</button>
+        </div>
+      </div>
 
-  <div id="panel_farm" class="panel hidden">
-    <h2>🌱 Your Farm</h2>
-    <div id="status_bar"></div>
-    <div class="farm-grid" id="farm_grid"></div>
-  </div>
+      <div id="farm_visual" class="farm-visual"></div>
 
-  <div id="panel_shop" class="panel hidden"><h2>🛒 Shop</h2></div>
-  <div id="panel_inv" class="panel hidden"><h2>🎒 Inventory</h2></div>
-  <div id="panel_quests" class="panel hidden"><h2>🚀 Quests</h2></div>
-  <div id="panel_profile" class="panel hidden"><h2>👤 Profile</h2></div>
-  <div id="panel_tutorial" class="panel hidden"><h2>❓ Help</h2></div>
+      <div id="farm_grid" class="farm-grid"></div>
+      <div class="help">Tap an empty tile to plant. Tap grown crop to harvest.</div>
+    </section>
 
+    <!-- SHOP -->
+    <section id="panel_shop" class="panel hidden">
+      <h2>🛒 Shop</h2>
+      <div id="shop_list"></div>
+    </section>
+
+    <!-- DRONES -->
+    <section id="panel_drones" class="panel hidden">
+      <h2>🤖 Drones (Auto-harvest)</h2>
+      <div id="drones_area"></div>
+      <p class="muted">Drones automatically harvest ready crops every X seconds.</p>
+    </section>
+
+    <!-- QUESTS -->
+    <section id="panel_quests" class="panel hidden">
+      <h2>📜 Quests</h2>
+      <div id="quests_list"></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="panel_profile" class="panel hidden">
+      <h2>👤 Profile</h2>
+      <div class="profile-row">
+        <img id="profile_avatar" class="profile-avatar hidden" src="" alt="avatar"/>
+        <div class="profile-info">
+          <div><b id="profile_name">Guest</b></div>
+          <div>Frags: <span id="profile_frags">0</span></div>
+          <div>Level: <span id="profile_level">1</span></div>
+        </div>
+      </div>
+
+      <div class="profile-edit">
+        <label>Avatar URL (png/jpg):</label>
+        <input id="input_avatar" placeholder="https://..." />
+        <label>Name:</label>
+        <input id="input_name" placeholder="Player name" />
+        <button id="btn_save_profile" class="small">Save Profile</button>
+      </div>
+
+      <div class="profile-actions">
+        <button id="btn_reset" class="danger small">Reset Progress</button>
+      </div>
+    </section>
+
+    <!-- LEADERS -->
+    <section id="panel_leaders" class="panel hidden">
+      <h2>🏆 Global Leaders</h2>
+      <div id="leaders_list"></div>
+    </section>
+  </main>
+
+  <footer class="footer">Cosmic Farm — demo · saves to your account (if backend available)</footer>
 </div>
 
-<script>
-// ✅ подключение Telegram WebApp
-let tg = window.Telegram.WebApp;
-tg.expand();
+<script src="telegram-init.js"></script>
+<script src="api.js"></script>
+<script src="app.js"></script>
 
-//✅ БАЗОВЫЕ ДАННЫЕ ИГРОКА
-let user_id = tg.initDataUnsafe?.user?.id || Math.floor(Math.random()*9999999);
-let frags = 0;
-let tiles = Array(9).fill("empty");
-let inventory = [];
-
-// ✅ Загрузка сохранённого прогресса
-async function loadGame() {
-  const res = await fetch(`https://my-app-space.onrender.com/game/state?user_id=${user_id}`);
-  const data = await res.json();
-
-  if(data.ok){
-    frags = data.frags;
-    tiles = data.farm;
-    inventory = data.inventory;
-  }
-  openPanel('farm');
-}
-
-// ✅ Сохранение прогресса
-async function saveGame(){
-  await fetch("https://my-app-space.onrender.com/game/save", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      user_id,
-      frags,
-      farm: tiles,
-      inventory
-    })
-  });
-}
-
-// ✅ открытие меню
-function openPanel(name){
-  document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-  document.getElementById(`panel_${name}`).classList.remove("hidden");
-  if(name === "farm") renderFarm();
-}
-
-// ✅ ферма
-function renderFarm(){
-  document.getElementById("user_bar").innerText = `Frags: ${frags}`;
-  document.getElementById("status_bar").innerText = `Frags: ${frags}`;
-
-  const grid = document.getElementById("farm_grid");
-  grid.innerHTML = "";
-
-  tiles.forEach((state, i)=>{
-    let el = document.createElement("div");
-    el.className = "tile";
-
-    if(state === "empty") el.innerText = "Empty";
-    if(state === "growing") el.innerText = "🌱";
-    if(state === "grown") el.innerText = "✅";
-
-    el.onclick = ()=> clickTile(i);
-    grid.appendChild(el);
-  });
-}
-
-// ✅ логика кликов
-function clickTile(i){
-  if(tiles[i] === "empty"){
-    tiles[i] = "growing";
-    setTimeout(()=>{
-      tiles[i] = "grown";
-      renderFarm();
-      saveGame();
-    }, 2500);
-  }
-  else if(tiles[i] === "grown"){
-    frags++;
-    tiles[i] = "empty";
-    renderFarm();
-    saveGame();
-  }
-  renderFarm();
-}
-
-// ✅ запускаем игру
-loadGame();
-</script>
 </body>
 </html>
