@@ -4,83 +4,120 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cosmic Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 body {
-    margin:0;
-    padding:0;
-    font-family: 'Orbitron', sans-serif;
-    background: radial-gradient(circle at top, #0b0f29, #000);
-    color:white;
-    overflow:hidden;
+  margin:0;
+  padding:0;
+  font-family: 'Orbitron', sans-serif;
+  background:#000814;
+  color:white;
+  overflow:hidden;
 }
+
 #app {
-    width:100vw;
-    height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding-top:20px;
 }
 
-/* Стартовый экран */
-.screen {
-    display:none;
-    width:100%;
-    height:100%;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding:20px;
+/* HEADER */
+.header {
+  text-align:center;
+  margin-bottom:10px;
+}
+.header h1 {
+  font-size:28px;
+  margin:0;
 }
 
-.active {
-    display:flex;
+/* MENU */
+.menu {
+  display:grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-gap:10px;
+  margin-top:15px;
 }
 
-.button {
-    padding:12px 18px;
-    background:#1b45ff;
-    border:none;
-    border-radius:8px;
-    margin-top:15px;
-    font-size:18px;
-    cursor:pointer;
-    color:white;
-    transition:0.25s;
+.menu-btn {
+  width:100px;
+  height:100px;
+  border-radius:12px;
+  background:#001d3d;
+  border:2px solid #00c9ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:15px;
+  cursor:pointer;
+  transition:0.25s;
 }
-.button:hover { background:#3b63ff; }
+.menu-btn:hover {
+  background:#003566;
+  transform:scale(1.05);
+}
 
-/* Ферма */
+/* MAIN PANEL */
+.panel {
+  width:100%;
+  height:58vh;
+  background:#001d3d;
+  border-top:2px solid #00c9ff;
+  border-bottom:2px solid #00c9ff;
+  border-radius:10px;
+  margin-top:20px;
+  padding:15px;
+  overflow-y:auto;
+}
+
+.hidden { display:none; }
+
+/* FARM GRID */
 .farm-grid {
-    display:grid;
-    grid-template-columns: repeat(3, 90px);
-    grid-gap:12px;
-    margin-top:25px;
+  display:grid;
+  grid-template-columns: repeat(3, 90px);
+  grid-gap:12px;
+  justify-content:center;
+  margin-top:15px;
 }
+
 .tile {
-    width:90px;
-    height:90px;
-    background:#111;
-    border:2px solid #1b45ff;
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:24px;
-    cursor:pointer;
-    transition:0.2s;
+  width:90px;
+  height:90px;
+  background:#000;
+  border:2px solid #00c9ff;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  cursor:pointer;
+  transition:0.2s;
 }
 .tile:hover {
-    transform:scale(1.07);
-    border-color:#4f8bff;
+  transform:scale(1.08);
+  border-color:#61efff;
 }
+
 .status-bar {
-    width:100%;
-    text-align:center;
-    font-size:18px;
-    margin-top:10px;
+  text-align:center;
+  font-size:18px;
+  margin-top:10px;
+}
+
+/* TUTORIAL */
+.tutorial {
+  font-size:14px;
+  background:#00152a;
+  border:1px solid #00c9ff;
+  padding:10px;
+  border-radius:8px;
 }
 </style>
 </head>
@@ -88,106 +125,107 @@ body {
 <body>
 <div id="app">
 
-    <!-- LANGUAGE SCREEN -->
-    <div id="screen_lang" class="screen active">
-        <h1>🌌 COSMIC FARM</h1>
-        <p>Select Language / Выбери язык</p>
-        <button class="button" onclick="setLang('en')">English</button>
-        <button class="button" onclick="setLang('ru')">Русский</button>
-    </div>
+  <div class="header">
+    <h1>🌌 COSMIC FARM</h1>
+    <div id="user_bar">Frags: 0</div>
+  </div>
 
-    <!-- START SCREEN -->
-    <div id="screen_start" class="screen">
-        <h1 id="title_text"></h1>
-        <p id="subtitle_text"></p>
-        <button class="button" onclick="goToFarm()" id="start_button"></button>
-    </div>
+  <!-- MENU -->
+  <div class="menu">
+    <div class="menu-btn" onclick="openPanel('farm')">🌱 Farm</div>
+    <div class="menu-btn" onclick="openPanel('shop')">🛒 Shop</div>
+    <div class="menu-btn" onclick="openPanel('inv')">🎒 Inventory</div>
+    <div class="menu-btn" onclick="openPanel('quests')">🚀 Quests</div>
+    <div class="menu-btn" onclick="openPanel('profile')">👤 Profile</div>
+    <div class="menu-btn" onclick="openPanel('tutorial')">❓ Help</div>
+  </div>
 
-    <!-- FARM SCREEN -->
-    <div id="screen_farm" class="screen">
-        <h2 id="farm_title"></h2>
-        <div class="status-bar" id="status_bar"></div>
+  <!-- PANELS -->
+  <div id="panel_farm" class="panel hidden">
+    <h2>🌱 Your Farm</h2>
+    <div class="status-bar" id="status_bar"></div>
+    <div class="farm-grid" id="farm_grid"></div>
+  </div>
 
-        <div class="farm-grid" id="farm_grid"></div>
+  <div id="panel_shop" class="panel hidden">
+    <h2>🛒 Shop</h2>
+    <p>Buy seeds, boosters, and upgrades (COMING SOON)</p>
+  </div>
+
+  <div id="panel_inv" class="panel hidden">
+    <h2>🎒 Inventory</h2>
+    <p>Your collected items appear here.</p>
+  </div>
+
+  <div id="panel_quests" class="panel hidden">
+    <h2>🚀 Quests</h2>
+    <p>Complete missions to earn rewards.</p>
+  </div>
+
+  <div id="panel_profile" class="panel hidden">
+    <h2>👤 Profile</h2>
+    <p>Your stats and progress.</p>
+  </div>
+
+  <div id="panel_tutorial" class="panel hidden">
+    <h2>❓ How to Play</h2>
+    <div class="tutorial">
+      ✅ Tap empty tile → plant seed<br>
+      ✅ Wait few seconds → crop ready<br>
+      ✅ Tap grown crop → get +1 Frag<br>
+      ✅ Spend frags in shop (soon)
     </div>
+  </div>
 
 </div>
 
 <script>
-// ---------- Language ----------
-let LANG = 'en';
-const text = {
-    en: {
-        title: "Cosmic Farm",
-        subtitle: "Grow crops on distant planets and earn Cosmic Frags!",
-        start: "Start Farming",
-        farm_title: "🌱 Your Cosmic Farm",
-        empty: "Empty",
-        planted: "🌱 Growing",
-        harvested:"+1 Frag"
-    },
-    ru: {
-        title: "Космическая Ферма",
-        subtitle: "Выращивай урожай на других планетах и зарабатывай Фраги!",
-        start: "Начать игру",
-        farm_title: "🌱 Твоя Космическая Ферма",
-        empty: "Пусто",
-        planted: "🌱 Растет",
-        harvested:"+1 Фраг"
-    }
-};
-
-// ---------- Game state ----------
 let frags = 0;
 let tiles = ["empty","empty","empty","empty","empty","empty","empty","empty","empty"];
 
-function setLang(l) {
-    LANG = l;
-    document.getElementById("screen_lang").classList.remove("active");
-    document.getElementById("screen_start").classList.add("active");
-
-    document.getElementById("title_text").innerText = text[LANG].title;
-    document.getElementById("subtitle_text").innerText = text[LANG].subtitle;
-    document.getElementById("start_button").innerText = text[LANG].start;
+// ---------- PANEL SWITCH ----------
+function openPanel(name){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
+  document.getElementById(`panel_${name}`).classList.remove("hidden");
+  
+  if(name === "farm") renderFarm();
 }
 
-function goToFarm() {
-    document.getElementById("screen_start").classList.remove("active");
-    document.getElementById("screen_farm").classList.add("active");
-    renderFarm();
-}
-
+// ---------- FARM ----------
 function renderFarm() {
-    document.getElementById("farm_title").innerText = text[LANG].farm_title;
-    document.getElementById("status_bar").innerText = `Frags: ${frags}`;
+  document.getElementById("user_bar").innerText = `Frags: ${frags}`;
+  document.getElementById("status_bar").innerText = `Frags: ${frags}`;
 
-    const grid = document.getElementById("farm_grid");
-    grid.innerHTML = "";
+  const grid = document.getElementById("farm_grid");
+  grid.innerHTML = "";
 
-    tiles.forEach((state, i)=>{
-        let el = document.createElement("div");
-        el.className = "tile";
+  tiles.forEach((state, i)=>{
+    let el = document.createElement("div");
+    el.className = "tile";
+    
+    if(state === "empty") el.innerText = "Empty";
+    if(state === "growing") el.innerText = "🌱";
+    if(state === "grown") el.innerText = "✅";
 
-        if(state === "empty") el.innerText = text[LANG].empty;
-        if(state === "growing") el.innerText = text[LANG].planted;
-        if(state === "grown") el.innerText = "✅";
-
-        el.onclick = ()=> clickTile(i);
-        grid.appendChild(el);
-    });
+    el.onclick = ()=> clickTile(i);
+    grid.appendChild(el);
+  });
 }
 
 function clickTile(i) {
-    if(tiles[i] === "empty"){
-        tiles[i] = "growing";
-        setTimeout(()=>{ tiles[i]="grown"; renderFarm(); }, 3000); // 3 sec grow
-    }
-    else if(tiles[i] === "grown"){
-        frags++;
-        tiles[i] = "empty";
-    }
-    renderFarm();
+  if(tiles[i] === "empty"){
+    tiles[i] = "growing";
+    setTimeout(()=>{ tiles[i]="grown"; renderFarm(); }, 2500);
+  }
+  else if(tiles[i] === "grown"){
+    frags++;
+    tiles[i] = "empty";
+  }
+  renderFarm();
 }
+
+// open farm on start
+openPanel('farm');
 </script>
 
 </body>
