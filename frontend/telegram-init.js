@@ -1,16 +1,12 @@
-// minimal Telegram WebApp initializer
-window.TG = null;
-window.TG_READY = false;
-
-(function init(){
-  try {
-    if(window.Telegram && Telegram.WebApp){
-      window.TG = Telegram.WebApp;
-      TG.expand();
-      TG_READY = true;
-    }
-  } catch(e){
-    // not in TG client
-    TG_READY = false;
-  }
-})();
+{
+  "name":"Cosmic Farm",
+  "short_name":"Farm",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#000814",
+  "theme_color":"#00c9ff",
+  "icons":[
+    { "src":"icon192.png","sizes":"192x192","type":"image/png" },
+    { "src":"icon512.png","sizes":"512x512","type":"image/png" }
+  ]
+}
