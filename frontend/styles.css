@@ -1,63 +1,70 @@
 :root {
-  --bg-top: #020617;
-  --panel: #0A1433;
-  --tile-empty: #081027;
-  --tile-growing: #23488e;
-  --text-muted: #8aa2ff;
-  --accent: #4374ff;
+  --bg: #020313;
+  --tile: #071227;
+  --tile-border: #4259ff;
+  --accent: #5274ff;
+  --card: #111d45;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+  margin:0; padding:0;
+  box-sizing:border-box;
+  font-family: Inter, system-ui, sans-serif;
+}
 
 body {
-  background: radial-gradient(circle at 30% 20%, #071233, #020617 70%);
+  background: radial-gradient(circle at 40% 20%, #08153b, #020313 70%);
   color:white;
-  font-family: Inter, system-ui, Arial;
-  overflow-x:hidden;
+  overflow:hidden;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
 }
 
-.top-panel {
+.top {
   display:flex;
   align-items:center;
-  gap:12px;
-  padding:12px;
+  padding:10px;
   background:rgba(0,0,0,0.25);
-  border-bottom:1px solid rgba(255,255,255,0.05);
+  border-bottom:1px solid rgba(255,255,255,0.07);
 }
 
 .house {
-  width:60px;
-  height:60px;
+  width:55px;
+  height:55px;
   border-radius:12px;
-  background:#122044;
+  background:#13255a;
   background-size:cover;
   background-position:center;
-  box-shadow:0 0 10px rgba(0,0,0,0.5);
 }
 
-.player-info { display:flex; flex-direction:column; font-size:14px; }
-#playerName { font-weight:600; }
-#playerStats { color:var(--text-muted); font-size:12px; }
+.info {
+  margin-left:10px;
+  font-size:14px;
+}
 
-.farm-wrapper {
-  width:100%;
+main {
+  flex:1;
+  overflow:hidden;
+  position:relative;
   display:flex;
-  justify-content:center;
-  padding:16px;
+  flex-direction:column;
+  align-items:center;
+  padding:10px;
 }
 
-.farm-grid {
+.farm {
   display:grid;
   gap:8px;
   width:100%;
-  max-width:520px;
+  max-width:500px;
 }
 
 .tile {
   aspect-ratio:1/1;
-  background:var(--tile-empty);
-  border:2px solid rgba(255,255,255,0.1);
-  border-radius:10px;
+  background: var(--tile);
+  border:2px solid var(--tile-border);
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -66,49 +73,88 @@ body {
   position:relative;
   cursor:pointer;
 }
-.tile:hover { border-color:var(--accent); transform:scale(1.04); }
+
+.tile.planted {
+  animation: growPulse 1s infinite alternate;
+}
+
+@keyframes growPulse {
+  0% { box-shadow: 0 0 4px #2e6bff; }
+  100% { box-shadow: 0 0 10px #528bff; }
+}
 
 .tile .timer {
   position:absolute;
   top:4px; left:4px;
   font-size:11px;
-  color:var(--text-muted);
+  color:#9abbff;
 }
 
 .hint {
-  text-align:center;
-  color:var(--text-muted);
-  margin-top:8px;
-  font-size:14px;
+  font-size:12px;
+  color:#8fa8ff;
+  margin-top:5px;
 }
 
-.bottom-menu {
-  position:fixed;
-  bottom:0; left:0; right:0;
+.menu {
   display:flex;
-  background:rgba(0,0,0,0.35);
-  border-top:1px solid rgba(255,255,255,0.05);
+  border-top:1px solid rgba(255,255,255,0.08);
 }
 
-.bottom-menu button {
+.menu button {
   flex:1;
-  padding:10px 5px;
-  font-size:14px;
-  color:white;
+  padding:12px 2px;
   background:none;
   border:none;
-}
-
-.modal {
-  position:fixed;
-  bottom:60px;
-  left:10px; right:10px;
-  background:var(--panel);
-  border-radius:12px;
-  padding:14px;
-  border:1px solid rgba(255,255,255,0.07);
-  max-height:50%;
-  overflow:auto;
+  color:white;
   font-size:14px;
 }
-.modal button { margin-top:10px; width:100%; padding:8px; }
+
+.panel {
+  position:fixed;
+  bottom:60px;
+  left:5%;
+  width:90%;
+  max-height:60%;
+  overflow:auto;
+  background:var(--card);
+  border-radius:15px;
+  padding:15px;
+  border:1px solid rgba(255,255,255,0.05);
+  animation: fadeUp 0.3s ease-out;
+}
+
+@keyframes fadeUp {
+  from { transform:translateY(50px); opacity:0; }
+  to   { transform:translateY(0); opacity:1; }
+}
+
+.card {
+  background:#0c1c44;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+.buyBtn {
+  width:100%;
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:8px;
+  border-radius:8px;
+  margin-top:6px;
+  font-size:14px;
+}
+
+.close {
+  margin-top:10px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#27395f;
+  color:white;
+  font-size:14px;
+}
