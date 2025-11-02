@@ -1,43 +1,35 @@
 // routes/game.js
-import express from 'express'
-import User from '../models/User.js'
-const router = express.Router()
+import express from 'express';
+import User from '../models/User.js';
 
-// GET → получить игровое состояние
-router.get('/state', async (req, res) => {
-  const { user_id } = req.query
-  if (!user_id) return res.json({ ok: false, msg: "No user ID" })
+const router = express.Router();
 
-  let user = await User.findOne({ tgId: user_id })
-  if (!user) {
+router.post('/state', async (req,res)=>{
+  const { telegramId } = req.body;
+  let user = await User.findOne({ telegramId });
+
+  if(!user){
     user = await User.create({
-      tgId: user_id,
+      telegramId,
       frags: 0,
-      farm: Array(9).fill("empty"),
-      inventory: []
-    })
+      tiles: Array(9).fill('empty'),
+      drones: 0,
+      quest: { harvested: 0 },
+    });
   }
 
-  res.json({
-    ok: true,
-    frags: user.frags,
-    farm: user.farm,
-    inventory: user.inventory
-  })
-})
+  res.json({ user });
+});
 
-// POST → сохранить состояние
-router.post('/save', async (req, res) => {
-  const { user_id, frags, farm, inventory } = req.body
-  if (!user_id) return res.json({ ok: false })
+router.post('/save', async (req,res)=>{
+  const { telegramId, frags, tiles, drones } = req.body;
 
-  await User.findOneAndUpdate(
-    { tgId: user_id },
-    { frags, farm, inventory },
-    { upsert: true }
-  )
+  const user = await User.findOneAndUpdate(
+    { telegramId },
+    { frags, tiles, drones }
+  );
 
-  res.json({ ok: true })
-})
+  res.json({ success: true, user });
+});
 
-export default router
+export default router;
