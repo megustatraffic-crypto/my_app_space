@@ -1,36 +1,27 @@
 // models/User.js
 import db from '../db.js';
 
-class User {
-  constructor(obj) {
-    this.id = obj.id || Date.now().toString();
-    this.telegramId = obj.telegramId || null;
-    this.name = obj.name || 'Player';
-    this.frags = obj.frags || 0;
-    this.plots = obj.plots || [];
-  }
-
+class UserModel {
   static async findOne(query) {
-    await db.read();
-    return db.data.users.find(u =>
-      Object.keys(query).every(k => u[k] == query[k])
-    ) || null;
+    const keys = Object.keys(query);
+    return db.data.users.find(u => keys.every(k => u[k] == query[k])) || null;
   }
 
-  async save() {
-    await db.read();
-    const existing = db.data.users.find(u => u.id === this.id);
-    if (existing) {
-      Object.assign(existing, this);
-    } else {
-      db.data.users.push(this);
-    }
+  static async create(obj) {
+    db.data.users.push(obj);
     await db.write();
+    return obj;
   }
 
-  ensurePlots() {
-    if (!this.plots.length) this.plots = [ { id: 1, crop: null, ready: false } ];
+  static async findOneAndUpdate(query, update) {
+    const keys = Object.keys(query);
+    const user = db.data.users.find(u => keys.every(k => u[k] == query[k]));
+    if (!user) return null;
+
+    Object.assign(user, update);
+    await db.write();
+    return user;
   }
 }
 
-export default User;
+export default UserModel;
