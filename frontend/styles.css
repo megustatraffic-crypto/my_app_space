@@ -15,10 +15,10 @@
 body {
   background: radial-gradient(circle at 40% 20%, #08153b, #020313 70%);
   color:white;
-  overflow:hidden;
   height:100vh;
   display:flex;
   flex-direction:column;
+  overflow:hidden;
 }
 
 .top {
@@ -27,6 +27,7 @@ body {
   padding:10px;
   background:rgba(0,0,0,0.25);
   border-bottom:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
 }
 
 .house {
@@ -36,6 +37,7 @@ body {
   background:#13255a;
   background-size:cover;
   background-position:center;
+  background-repeat:no-repeat;
 }
 
 .info {
@@ -45,14 +47,16 @@ body {
 
 main {
   flex:1;
-  overflow:hidden;
   position:relative;
   display:flex;
   flex-direction:column;
   align-items:center;
+  overflow-y:auto;
   padding:10px;
+  padding-bottom:80px; /* чтобы ферма не пряталась под меню */
 }
 
+/* FARM GRID */
 .farm {
   display:grid;
   gap:8px;
@@ -74,13 +78,17 @@ main {
   cursor:pointer;
 }
 
+.tile:active {
+  transform:scale(0.96);
+}
+
 .tile.planted {
   animation: growPulse 1s infinite alternate;
 }
 
 @keyframes growPulse {
-  0% { box-shadow: 0 0 4px #2e6bff; }
-  100% { box-shadow: 0 0 10px #528bff; }
+  0% { box-shadow: 0 0 3px #2e6bff; }
+  100% { box-shadow: 0 0 9px #528bff; }
 }
 
 .tile .timer {
@@ -90,15 +98,31 @@ main {
   color:#9abbff;
 }
 
+/* HINT BELOW GRID */
 .hint {
   font-size:12px;
   color:#8fa8ff;
   margin-top:5px;
 }
 
+/* DRONE CANVAS OVER FARM */
+#droneCanvas {
+  position:absolute;
+  top:0; left:0;
+  pointer-events:none;
+}
+
+/* BOTTOM FIXED MENU */
 .menu {
   display:flex;
   border-top:1px solid rgba(255,255,255,0.08);
+  background:rgba(0,0,0,0.35);
+  backdrop-filter:blur(6px);
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  z-index:50;
 }
 
 .menu button {
@@ -108,27 +132,38 @@ main {
   border:none;
   color:white;
   font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
+/* PANELS (Shop / Drones / Quests / Profile) */
 .panel {
   position:fixed;
-  bottom:60px;
+  bottom:75px;
   left:5%;
   width:90%;
-  max-height:60%;
+  max-height:65%;
   overflow:auto;
   background:var(--card);
   border-radius:15px;
   padding:15px;
   border:1px solid rgba(255,255,255,0.05);
-  animation: fadeUp 0.3s ease-out;
+  animation: fadeUp 0.25s ease-out;
+  z-index:100;
+  display:none; /* скрыта по умолчанию */
+}
+
+.panel.open {
+  display:block;
 }
 
 @keyframes fadeUp {
-  from { transform:translateY(50px); opacity:0; }
+  from { transform:translateY(40px); opacity:0; }
   to   { transform:translateY(0); opacity:1; }
 }
 
+/* CARD ELEMENTS (Shop items, Quest items) */
 .card {
   background:#0c1c44;
   padding:12px;
@@ -137,7 +172,8 @@ main {
   border:1px solid rgba(255,255,255,0.05);
 }
 
-.buyBtn {
+/* BUTTONS */
+.buyBtn, .close {
   width:100%;
   background:var(--accent);
   color:white;
@@ -147,14 +183,21 @@ main {
   margin-top:6px;
   font-size:14px;
 }
+.close { background:#27395f; }
 
-.close {
-  margin-top:10px;
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#27395f;
-  color:white;
-  font-size:14px;
+/* SCROLL BEAUTY on mobile */
+.panel::-webkit-scrollbar,
+main::-webkit-scrollbar {
+  width:0;
+}
+
+/* Desktop fixes */
+@media(min-width:700px){
+  body {
+    overflow:auto;
+  }
+  main {
+    max-width:600px;
+    margin:0 auto;
+  }
 }
