@@ -2,10 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Cosmic Farm</title>
-<link rel="stylesheet" href="styles.css">
+
+<link rel="stylesheet" href="styles.css?v=3">
+<link rel="manifest" href="manifest.json">
+
+<!-- PWA & Telegram WebApp -->
+<script src="telegram-init.js?v=3"></script>
 </head>
+
 <body>
 
 <div class="screen" id="screenFarm">
@@ -25,9 +31,8 @@
     </main>
 </div>
 
-
 <!-- SHOP -->
-<div class="panel" id="panelShop" hidden>
+<div class="panel" id="panelShop">
     <h2>🏪 Shop</h2>
     <div class="card">
         <b>Drone Mk.I</b><br>
@@ -47,28 +52,26 @@
 </div>
 
 <!-- DRONES -->
-<div class="panel" id="panelDrones" hidden>
+<div class="panel" id="panelDrones">
     <h2>🤖 Drones</h2>
     <p>You have: <span id="droneCount"></span></p>
-    <p>Drones collect grown crops automatically!</p>
     <button class="close" onclick="closePanels()">Close</button>
 </div>
 
 <!-- QUESTS -->
-<div class="panel" id="panelQuests" hidden>
+<div class="panel" id="panelQuests">
     <h2>📜 Quests</h2>
     <div class="card" id="questHarvest"></div>
     <button class="close" onclick="closePanels()">Close</button>
 </div>
 
 <!-- PROFILE -->
-<div class="panel" id="panelProfile" hidden>
+<div class="panel" id="panelProfile">
     <h2>👤 Profile</h2>
     <p>Name: <input id="nameInput"></p>
     <button class="buyBtn" onclick="saveName()">Save</button>
     <button class="close" onclick="closePanels()">Close</button>
 </div>
-
 
 <!-- BOTTOM MENU -->
 <nav class="menu">
@@ -79,7 +82,6 @@
     <button onclick="openPanel('panelProfile')">👤 Profile</button>
 </nav>
 
-<script src="app.js"></script>
-
+<script type="module" src="app.js?v=3"></script>
 </body>
 </html>
