@@ -1,3 +1,5 @@
-// safe wrapper so code runs in browser if Telegram undefined
-window.Telegram = window.Telegram || {};
-Telegram.WebApp = Telegram.WebApp || { initDataUnsafe: null, expand(){}, close(){} };
+if(window.Telegram){
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+  tg.disableVerticalSwipe();
+}
