@@ -25,9 +25,8 @@ body {
   display:flex;
   align-items:center;
   padding:10px;
-  background:rgba(0,0,0,0.25);
+  background:rgba(0,0,0,0.2);
   border-bottom:1px solid rgba(255,255,255,0.07);
-  flex-shrink:0;
 }
 
 .house {
@@ -37,133 +36,106 @@ body {
   background:#13255a;
   background-size:cover;
   background-position:center;
-  background-repeat:no-repeat;
 }
 
-.info {
-  margin-left:10px;
-  font-size:14px;
-}
+.info { margin-left:10px; }
 
 main {
   flex:1;
-  position:relative;
+  overflow-y:auto;
   display:flex;
   flex-direction:column;
   align-items:center;
-  overflow-y:auto;
   padding:10px;
-  padding-bottom:80px; /* чтобы ферма не пряталась под меню */
+  padding-bottom:90px;
+  position:relative;
 }
 
 /* FARM GRID */
 .farm {
   display:grid;
-  gap:8px;
+  gap:6px;
   width:100%;
   max-width:500px;
 }
-
 .tile {
   aspect-ratio:1/1;
-  background: var(--tile);
+  background:var(--tile);
   border:2px solid var(--tile-border);
   border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:28px;
-  transition:0.15s;
+  font-size:26px;
   position:relative;
-  cursor:pointer;
 }
-
-.tile:active {
-  transform:scale(0.96);
-}
-
 .tile.planted {
-  animation: growPulse 1s infinite alternate;
+  animation: pulse 1s infinite alternate;
 }
-
-@keyframes growPulse {
-  0% { box-shadow: 0 0 3px #2e6bff; }
-  100% { box-shadow: 0 0 9px #528bff; }
+@keyframes pulse {
+  0% { box-shadow:0 0 3px #2e6bff; }
+  100% { box-shadow:0 0 9px #528bff; }
 }
-
-.tile .timer {
+.timer {
   position:absolute;
-  top:4px; left:4px;
-  font-size:11px;
+  top:3px; left:3px;
+  font-size:10px;
   color:#9abbff;
 }
-
-/* HINT BELOW GRID */
 .hint {
   font-size:12px;
   color:#8fa8ff;
-  margin-top:5px;
+  margin-top:4px;
 }
 
-/* DRONE CANVAS OVER FARM */
+/* DRONE CANVAS */
 #droneCanvas {
   position:absolute;
   top:0; left:0;
   pointer-events:none;
 }
 
-/* BOTTOM FIXED MENU */
+/* MENU */
 .menu {
   display:flex;
-  border-top:1px solid rgba(255,255,255,0.08);
-  background:rgba(0,0,0,0.35);
-  backdrop-filter:blur(6px);
   position:fixed;
   bottom:0;
   left:0;
   width:100%;
-  z-index:50;
+  background:rgba(0,0,0,0.3);
+  border-top:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(6px);
 }
-
 .menu button {
   flex:1;
   padding:12px 2px;
   background:none;
   border:none;
   color:white;
-  font-size:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  font-size:18px;
 }
 
-/* PANELS (Shop / Drones / Quests / Profile) */
+/* PANELS */
 .panel {
   position:fixed;
-  bottom:75px;
-  left:5%;
-  width:90%;
+  bottom:70px;
+  left:6%;
+  width:88%;
   max-height:65%;
   overflow:auto;
   background:var(--card);
-  border-radius:15px;
-  padding:15px;
-  border:1px solid rgba(255,255,255,0.05);
-  animation: fadeUp 0.25s ease-out;
-  z-index:100;
-  display:none; /* скрыта по умолчанию */
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.07);
+  padding:14px;
+  display:none;
+  animation: fadeUp .25s ease-out;
 }
-
-.panel.open {
-  display:block;
-}
-
+.panel.open { display:block; }
 @keyframes fadeUp {
   from { transform:translateY(40px); opacity:0; }
   to   { transform:translateY(0); opacity:1; }
 }
 
-/* CARD ELEMENTS (Shop items, Quest items) */
 .card {
   background:#0c1c44;
   padding:12px;
@@ -172,32 +144,17 @@ main {
   border:1px solid rgba(255,255,255,0.05);
 }
 
-/* BUTTONS */
 .buyBtn, .close {
   width:100%;
-  background:var(--accent);
-  color:white;
   border:none;
-  padding:8px;
-  border-radius:8px;
-  margin-top:6px;
+  border-radius:10px;
+  padding:10px;
+  margin-top:8px;
+  color:white;
   font-size:14px;
 }
+.buyBtn { background:var(--accent); }
 .close { background:#27395f; }
 
-/* SCROLL BEAUTY on mobile */
-.panel::-webkit-scrollbar,
-main::-webkit-scrollbar {
-  width:0;
-}
-
-/* Desktop fixes */
-@media(min-width:700px){
-  body {
-    overflow:auto;
-  }
-  main {
-    max-width:600px;
-    margin:0 auto;
-  }
-}
+/* hide scrollbars */
+.panel::-webkit-scrollbar, main::-webkit-scrollbar { width:0; }
