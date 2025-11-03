@@ -2,86 +2,87 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, user-scalable=no">
 <title>Cosmic Farm</title>
-
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.json">
-
-<!-- PWA & Telegram WebApp -->
-<script src="telegram-init.js?v=3"></script>
 </head>
 
 <body>
 
-<div class="screen" id="screenFarm">
-    <header class="top">
-        <div class="house" id="house"></div>
-        <div class="info">
-            <div id="playerName">Guest</div>
-            <div id="playerStats">Frags: 0 | Lvl 1 | Drones: 0</div>
-        </div>
-    </header>
-
-    <main>
-        <div class="farm" id="farm"></div>
-        <p class="hint">Tap a tile to plant • Tap grown crop to harvest</p>
-
-        <canvas id="droneCanvas"></canvas>
-    </main>
+<div class="top">
+  <div class="house" id="house"></div>
+  <div class="info">
+      <div id="playerName">Guest</div>
+      <div id="playerStats">Frags: 0 | Lvl 1 | Drones: 0</div>
+  </div>
 </div>
+
+<main>
+    <div class="farm" id="farm"></div>
+    <p class="hint">Tap to plant • Tap grown to harvest</p>
+    <canvas id="droneCanvas"></canvas>
+</main>
 
 <!-- SHOP -->
 <div class="panel" id="panelShop">
-    <h2>🏪 Shop</h2>
-    <div class="card">
-        <b>Drone Mk.I</b><br>
-        Auto-collect crops<br>
-        Price: 10 FRAG
-        <button class="buyBtn" onclick="buyDrone()">Buy</button>
-    </div>
+  <h2>🏪 Shop</h2>
 
-    <div class="card">
-        <b>Upgrade Farm +1</b><br>
-        More tiles<br>
-        Price: 50 FRAG
-        <button class="buyBtn" onclick="buyFarm()">Buy</button>
-    </div>
+  <div class="card">
+    <b>Drone Mk.I</b><br>Collects grown crops<br>
+    Price: 10 FRAG
+    <button class="buyBtn" onclick="buyDrone()">Buy</button>
+  </div>
 
-    <button class="close" onclick="closePanels()">Close</button>
+  <div class="card">
+    <b>Extend Farm</b><br>Add +1 tile row/column<br>
+    Price: 50 FRAG
+    <button class="buyBtn" onclick="buyFarm()">Buy</button>
+  </div>
+
+  <div class="card">
+    <b>Seeds</b><br>
+    <button class="buyBtn" onclick="buySeed('basic')">Basic — Free</button>
+    <button class="buyBtn" onclick="buySeed('fast')">Fast — 5 FRAG</button>
+    <button class="buyBtn" onclick="buySeed('premium')">Premium — 15 FRAG</button>
+  </div>
+
+  <button class="close" onclick="closePanels()">Close</button>
 </div>
 
 <!-- DRONES -->
 <div class="panel" id="panelDrones">
-    <h2>🤖 Drones</h2>
-    <p>You have: <span id="droneCount"></span></p>
-    <button class="close" onclick="closePanels()">Close</button>
+  <h2>🤖 Drones</h2>
+  <p>You have: <span id="droneCount">0</span></p>
+  <p>Drones automatically collect grown plants!</p>
+  <button class="close" onclick="closePanels()">Close</button>
 </div>
 
 <!-- QUESTS -->
 <div class="panel" id="panelQuests">
-    <h2>📜 Quests</h2>
-    <div class="card" id="questHarvest"></div>
-    <button class="close" onclick="closePanels()">Close</button>
+  <h2>📜 Quests</h2>
+  <div class="card" id="questHarvest"></div>
+  <button class="close" onclick="closePanels()">Close</button>
 </div>
 
 <!-- PROFILE -->
 <div class="panel" id="panelProfile">
-    <h2>👤 Profile</h2>
-    <p>Name: <input id="nameInput"></p>
-    <button class="buyBtn" onclick="saveName()">Save</button>
-    <button class="close" onclick="closePanels()">Close</button>
+  <h2>👤 Profile</h2>
+  <input id="nameInput" placeholder="Player Name">
+  <button class="buyBtn" onclick="saveName()">Save</button>
+  <button class="close" onclick="closePanels()">Close</button>
 </div>
 
-<!-- BOTTOM MENU -->
+<!-- MENU -->
 <nav class="menu">
-    <button onclick="openFarm()">🌱 Farm</button>
-    <button onclick="openPanel('panelShop')">🏪 Shop</button>
-    <button onclick="openPanel('panelDrones')">🤖 Drones</button>
-    <button onclick="openPanel('panelQuests')">📜 Quests</button>
-    <button onclick="openPanel('panelProfile')">👤 Profile</button>
+  <button onclick="openFarm()">🌱</button>
+  <button onclick="openPanel('panelShop')">🏪</button>
+  <button onclick="openPanel('panelDrones')">🤖</button>
+  <button onclick="openPanel('panelQuests')">📜</button>
+  <button onclick="openPanel('panelProfile')">👤</button>
 </nav>
 
-<script type="module" src="app.js?v=3"></script>
+<script src="app.js"></script>
+<script src="telegram-init.js"></script>
 </body>
 </html>
