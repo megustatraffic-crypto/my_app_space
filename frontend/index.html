@@ -2,87 +2,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta name="viewport" content="width=device-width, user-scalable=no"/>
 <title>Cosmic Farm</title>
 <link rel="stylesheet" href="styles.css">
-<link rel="manifest" href="manifest.json">
 </head>
 
 <body>
 
-<div class="top">
-  <div class="house" id="house"></div>
-  <div class="info">
-      <div id="playerName">Guest</div>
-      <div id="playerStats">Frags: 0 | Lvl 1 | Drones: 0</div>
-  </div>
-</div>
+<!-- TOP BAR -->
+<header class="top">
+    <img id="playerAvatar" class="avatar" src="img/default_avatar.png">
+    <div class="info">
+        <div id="playerName">Guest</div>
+        <div id="playerStats">Frags: 0 | Lvl 1 | Drones: 0</div>
+    </div>
+    <div class="starsWrap" onclick="openPanel('panelStars')">
+        ⭐ <span id="starsAmount">0</span>
+    </div>
+</header>
 
+<!-- MAIN SCREEN / FARM -->
 <main>
+    <div class="house" id="house"></div>
     <div class="farm" id="farm"></div>
-    <p class="hint">Tap to plant • Tap grown to harvest</p>
+    <p class="hint">Tap to plant • Tap grown crop to harvest</p>
+
+    <!-- DRONE CANVAS -->
     <canvas id="droneCanvas"></canvas>
 </main>
 
+<!-- BOTTOM NAVIGATION -->
+<nav class="menu">
+    <button onclick="openFarm()">🌱 Farm</button>
+    <button onclick="openPanel('panelShop')">🏪 Shop</button>
+    <button onclick="openPanel('panelDrones')">🤖 Drones</button>
+    <button onclick="openPanel('panelQuests')">📜 Quests</button>
+    <button onclick="openPanel('panelProfile')">👤 Profile</button>
+</nav>
+
+<!-- PANELS -->
+
 <!-- SHOP -->
-<div class="panel" id="panelShop">
-  <h2>🏪 Shop</h2>
+<div class="panel" id="panelShop" hidden>
+    <h2>🏪 Shop</h2>
 
-  <div class="card">
-    <b>Drone Mk.I</b><br>Collects grown crops<br>
-    Price: 10 FRAG
-    <button class="buyBtn" onclick="buyDrone()">Buy</button>
-  </div>
+    <div class="card">
+        <b>Buy Drones</b><br>
+        Auto-collection of crops
+        <button class="buyBtn" onclick="buyDrone()">Buy Drone — 15 FRAG</button>
+    </div>
 
-  <div class="card">
-    <b>Extend Farm</b><br>Add +1 tile row/column<br>
-    Price: 50 FRAG
-    <button class="buyBtn" onclick="buyFarm()">Buy</button>
-  </div>
+    <div class="card">
+        <b>Expand Farm</b><br>
+        +1 size (up to 7×7)
+        <button class="buyBtn" onclick="buyFarm()">Expand — 50 FRAG</button>
+    </div>
 
-  <div class="card">
-    <b>Seeds</b><br>
-    <button class="buyBtn" onclick="buySeed('basic')">Basic — Free</button>
-    <button class="buyBtn" onclick="buySeed('fast')">Fast — 5 FRAG</button>
-    <button class="buyBtn" onclick="buySeed('premium')">Premium — 15 FRAG</button>
-  </div>
+    <div class="card">
+        <b>Cosmic Seeds</b><br>
+        Better yield, slower growth
+        <button class="buyBtn" onclick="openPanel('panelSeeds')">Open Seeds</button>
+    </div>
 
-  <button class="close" onclick="closePanels()">Close</button>
+    <button class="close" onclick="closePanels()">Close</button>
 </div>
 
-<!-- DRONES -->
-<div class="panel" id="panelDrones">
-  <h2>🤖 Drones</h2>
-  <p>You have: <span id="droneCount">0</span></p>
-  <p>Drones automatically collect grown plants!</p>
-  <button class="close" onclick="closePanels()">Close</button>
+<!-- SEED PANEL -->
+<div class="panel" id="panelSeeds" hidden>
+    <h2>🌾 Seeds</h2>
+    <div id="seedList"></div>
+    <button class="close" onclick="closePanels()">Close</button>
 </div>
 
-<!-- QUESTS -->
-<div class="panel" id="panelQuests">
-  <h2>📜 Quests</h2>
-  <div class="card" id="questHarvest"></div>
-  <button class="close" onclick="closePanels()">Close</button>
+<!-- DRONE PANEL -->
+<div class="panel" id="panelDrones" hidden>
+    <h2>🤖 Drones</h2>
+    <p>You have: <span id="droneCount"></span></p>
+    <p>Drones level up and harvest faster</p>
+    <button class="close" onclick="closePanels()">Close</button>
+</div>
+
+<!-- QUESTS PANEL -->
+<div class="panel" id="panelQuests" hidden>
+    <h2>📜 Daily Quests</h2>
+    <div id="questsArea"></div>
+    <button class="close" onclick="closePanels()">Close</button>
 </div>
 
 <!-- PROFILE -->
-<div class="panel" id="panelProfile">
-  <h2>👤 Profile</h2>
-  <input id="nameInput" placeholder="Player Name">
-  <button class="buyBtn" onclick="saveName()">Save</button>
-  <button class="close" onclick="closePanels()">Close</button>
+<div class="panel" id="panelProfile" hidden>
+    <h2>👤 Profile</h2>
+    <p>Name:</p>
+    <input id="nameInput">
+
+    <p style="margin-top:10px;">Avatar:</p>
+    <input type="file" accept="image/*" onchange="uploadAvatar(this)">
+    <button class="buyBtn" onclick="saveName()">Save</button>
+    <button class="close" onclick="closePanels()">Close</button>
 </div>
 
-<!-- MENU -->
-<nav class="menu">
-  <button onclick="openFarm()">🌱</button>
-  <button onclick="openPanel('panelShop')">🏪</button>
-  <button onclick="openPanel('panelDrones')">🤖</button>
-  <button onclick="openPanel('panelQuests')">📜</button>
-  <button onclick="openPanel('panelProfile')">👤</button>
-</nav>
+<!-- STARS SHOP -->
+<div class="panel" id="panelStars" hidden>
+    <h2>⭐ Stars Shop</h2>
+
+    <div class="card">
+        +100 FRAG — 10⭐
+        <button class="buyBtn" onclick="buyStarsFrag(100,10)">Buy</button>
+    </div>
+
+    <div class="card">
+        +550 FRAG — 50⭐
+        <button class="buyBtn" onclick="buyStarsFrag(550,50)">Buy</button>
+    </div>
+
+    <div class="card">
+        +1200 FRAG — 100⭐
+        <button class="buyBtn" onclick="buyStarsFrag(1200,100)">Buy</button>
+    </div>
+
+    <div class="card">
+        3 Premium Cases — 150⭐
+        <button class="buyBtn" onclick="buyPremiumCases()">Buy</button>
+    </div>
+
+    <div class="card">
+        Expand farm beyond 7×7 — 200⭐
+        <button class="buyBtn" onclick="buyMegaFarm()">Buy</button>
+    </div>
+
+    <button class="close" onclick="closePanels()">Close</button>
+</div>
 
 <script src="app.js"></script>
-<script src="telegram-init.js"></script>
 </body>
 </html>
