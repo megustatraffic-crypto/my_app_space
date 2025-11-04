@@ -1,138 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, user-scalable=no"/>
-<title>Cosmic Farm</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1" />
+  <title>Cosmic Farm — Mini App</title>
+  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Cosmic Farm — cyber-space farming game. Grow, harvest, buy drones and Stars." />
 </head>
-
 <body>
 
-<!-- TOP BAR -->
-<header class="top">
-    <img id="playerAvatar" class="avatar" src="img/default_avatar.png">
+  <!-- TOP HUD -->
+  <header class="top">
+    <div class="house" id="house" title="Your house / base"></div>
+
+    <img id="playerAvatar" class="avatar" src="img/default_avatar.png" alt="avatar" />
+
     <div class="info">
-        <div id="playerName">Guest</div>
-        <div id="playerStats">Frags: 0 | Lvl 1 | Drones: 0</div>
+      <div id="playerName">Guest</div>
+      <div id="playerStats">Frags: 0 • Lvl 1 • Drones: 0</div>
     </div>
-    <div class="starsWrap" onclick="openPanel('panelStars')">
-        ⭐ <span id="starsAmount">0</span>
+
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="font-size:13px;color:var(--text-soft);margin-right:6px">⭐</div>
+      <div id="starsAmount" style="font-weight:700;min-width:40px;text-align:right">0</div>
     </div>
-</header>
+  </header>
 
-<!-- MAIN SCREEN / FARM -->
-<main>
-    <div class="house" id="house"></div>
-    <div class="farm" id="farm"></div>
-    <p class="hint">Tap to plant • Tap grown crop to harvest</p>
+  <!-- MAIN -->
+  <main>
+    <!-- Farm grid (dynamic) -->
+    <div id="farmContainer" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+      <div id="farm" class="farm" aria-label="Farm grid"></div>
+      <p class="hint" id="farmHint">Tap a tile to plant • Tap grown crop to harvest</p>
+    </div>
 
-    <!-- DRONE CANVAS -->
+    <!-- Drone canvas overlay -->
     <canvas id="droneCanvas"></canvas>
-</main>
+  </main>
 
-<!-- BOTTOM NAVIGATION -->
-<nav class="menu">
+  <!-- BOTTOM NAV -->
+  <nav class="menu">
     <button onclick="openFarm()">🌱 Farm</button>
     <button onclick="openPanel('panelShop')">🏪 Shop</button>
     <button onclick="openPanel('panelDrones')">🤖 Drones</button>
     <button onclick="openPanel('panelQuests')">📜 Quests</button>
     <button onclick="openPanel('panelProfile')">👤 Profile</button>
-</nav>
+  </nav>
 
-<!-- PANELS -->
+  <!-- PANELS -->
 
-<!-- SHOP -->
-<div class="panel" id="panelShop" hidden>
+  <!-- SHOP -->
+  <div class="panel" id="panelShop" hidden>
     <h2>🏪 Shop</h2>
 
     <div class="card">
-        <b>Buy Drones</b><br>
-        Auto-collection of crops
-        <button class="buyBtn" onclick="buyDrone()">Buy Drone — 15 FRAG</button>
+      <h3>Buy Drones</h3>
+      <p>Auto-collect ready crops. First drone cheap, next costlier.</p>
+      <button class="buyBtn" onclick="buyDrone()">Buy Drone — 15 FRAG</button>
     </div>
 
     <div class="card">
-        <b>Expand Farm</b><br>
-        +1 size (up to 7×7)
-        <button class="buyBtn" onclick="buyFarm()">Expand — 50 FRAG</button>
+      <h3>Expand Farm</h3>
+      <p>Increase farm size (up to 7×7 via progress, beyond via Stars).</p>
+      <button class="buyBtn" onclick="buyFarm()">Expand (+1 grid) — 50 FRAG</button>
     </div>
 
     <div class="card">
-        <b>Cosmic Seeds</b><br>
-        Better yield, slower growth
-        <button class="buyBtn" onclick="openPanel('panelSeeds')">Open Seeds</button>
+      <h3>Seeds</h3>
+      <p>Choose seeds with different speed & profit</p>
+      <button class="buyBtn" onclick="openPanel('panelSeeds')">Open Seeds</button>
+    </div>
+
+    <div class="card">
+      <h3>Cases</h3>
+      <p>Open cases for chance to get skins, drones, boosts.</p>
+      <button class="buyBtn" onclick="openCases()">Open Case</button>
     </div>
 
     <button class="close" onclick="closePanels()">Close</button>
-</div>
+  </div>
 
-<!-- SEED PANEL -->
-<div class="panel" id="panelSeeds" hidden>
+  <!-- SEEDS -->
+  <div class="panel" id="panelSeeds" hidden>
     <h2>🌾 Seeds</h2>
     <div id="seedList"></div>
     <button class="close" onclick="closePanels()">Close</button>
-</div>
+  </div>
 
-<!-- DRONE PANEL -->
-<div class="panel" id="panelDrones" hidden>
+  <!-- DRONES -->
+  <div class="panel" id="panelDrones" hidden>
     <h2>🤖 Drones</h2>
-    <p>You have: <span id="droneCount"></span></p>
-    <p>Drones level up and harvest faster</p>
+    <p>You have: <span id="droneCount">0</span></p>
+    <p>Drones collect grown crops automatically. Buy upgrades to improve speed.</p>
+    <div class="card">
+      <h3>Upgrade Drone</h3>
+      <p>Improve drone speed/power (coming soon)</p>
+      <button class="buyBtn" onclick="alert('Upgrade system coming soon')">Upgrade</button>
+    </div>
     <button class="close" onclick="closePanels()">Close</button>
-</div>
+  </div>
 
-<!-- QUESTS PANEL -->
-<div class="panel" id="panelQuests" hidden>
+  <!-- QUESTS -->
+  <div class="panel" id="panelQuests" hidden>
     <h2>📜 Daily Quests</h2>
-    <div id="questsArea"></div>
+    <div id="questsArea" class="card"></div>
     <button class="close" onclick="closePanels()">Close</button>
-</div>
+  </div>
 
-<!-- PROFILE -->
-<div class="panel" id="panelProfile" hidden>
+  <!-- PROFILE -->
+  <div class="panel" id="panelProfile" hidden>
     <h2>👤 Profile</h2>
-    <p>Name:</p>
-    <input id="nameInput">
 
-    <p style="margin-top:10px;">Avatar:</p>
-    <input type="file" accept="image/*" onchange="uploadAvatar(this)">
-    <button class="buyBtn" onclick="saveName()">Save</button>
+    <div class="card">
+      <label for="nameInput"><b>Name</b></label>
+      <input id="nameInput" type="text" placeholder="Your name" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:none;background:#0c1b3a;color:white">
+      <button class="buyBtn" onclick="saveName()" style="margin-top:10px">Save</button>
+    </div>
+
+    <div class="card">
+      <label><b>Avatar</b></label>
+      <input id="avatarFile" type="file" accept="image/*" style="margin-top:8px" onchange="uploadAvatar(this)">
+      <p style="font-size:12px;color:var(--text-soft);margin-top:8px">Upload from phone — we will save and display it in your profile.</p>
+    </div>
+
+    <div class="card">
+      <h3>VIP</h3>
+      <p>VIP gives +10% speed, +10% income, +1 drone slot. (Stars)</p>
+      <button class="buyBtn" onclick="buyVIP()">Buy VIP — 220 Stars</button>
+    </div>
+
     <button class="close" onclick="closePanels()">Close</button>
-</div>
+  </div>
 
-<!-- STARS SHOP -->
-<div class="panel" id="panelStars" hidden>
+  <!-- STARS SHOP -->
+  <div class="panel" id="panelStars" hidden>
     <h2>⭐ Stars Shop</h2>
 
     <div class="card">
-        +100 FRAG — 10⭐
-        <button class="buyBtn" onclick="buyStarsFrag(100,10)">Buy</button>
+      <b>10⭐</b><br>+100 FRAG
+      <button class="buyBtn" onclick="buyStarsFrag(100,10)">Buy — 10⭐</button>
     </div>
 
     <div class="card">
-        +550 FRAG — 50⭐
-        <button class="buyBtn" onclick="buyStarsFrag(550,50)">Buy</button>
+      <b>50⭐</b><br>+550 FRAG
+      <button class="buyBtn" onclick="buyStarsFrag(550,50)">Buy — 50⭐</button>
     </div>
 
     <div class="card">
-        +1200 FRAG — 100⭐
-        <button class="buyBtn" onclick="buyStarsFrag(1200,100)">Buy</button>
+      <b>100⭐</b><br>+1200 FRAG
+      <button class="buyBtn" onclick="buyStarsFrag(1200,100)">Buy — 100⭐</button>
     </div>
 
     <div class="card">
-        3 Premium Cases — 150⭐
-        <button class="buyBtn" onclick="buyPremiumCases()">Buy</button>
+      <b>150⭐</b><br>3 Premium Cases
+      <button class="buyBtn" onclick="buyPremiumCases()">Buy — 150⭐</button>
     </div>
 
     <div class="card">
-        Expand farm beyond 7×7 — 200⭐
-        <button class="buyBtn" onclick="buyMegaFarm()">Buy</button>
+      <b>Expand beyond 7×7</b><br>Buy extra farm size (8×8 / 9×9 / 10×10) from here
+      <button class="buyBtn" onclick="openPanel('panelStars')">Open expansion options</button>
     </div>
 
     <button class="close" onclick="closePanels()">Close</button>
-</div>
+  </div>
 
-<script src="app.js"></script>
+  <!-- MODAL Placeholder for case-opening animation -->
+  <div id="caseModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:50">
+    <div style="background:var(--card);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);max-width:320px;width:86%;text-align:center">
+      <h3 id="caseTitle">Opening Case...</h3>
+      <div id="caseVisual" style="height:140px;margin-top:8px"></div>
+      <button class="buyBtn" onclick="closeCaseModal()" style="margin-top:12px">Close</button>
+    </div>
+  </div>
+
+  <!-- Include game logic -->
+  <script src="app.js" type="module"></script>
 </body>
-</html>
+                                            </html>- 
