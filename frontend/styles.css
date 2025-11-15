@@ -1,82 +1,70 @@
 :root{
-  --bg1: #020313;
-  --card: rgba(10,18,40,0.85);
+  --bg: #020313;
+  --tile: #071227;
+  --tile-border: #4259ff;
   --accent: #5274ff;
-  --accent-2: #8a3cff;
-  --muted: #9fb2ff;
-  --glass: rgba(255,255,255,0.04);
+  --card: #0b1630;
+  --w: 100%;
 }
 
-/* reset */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#app{height:100%}
 body{
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: radial-gradient(circle at 10% 10%, #08153b 0%, #020313 40%, #000 100%);
-  color:#e7f0ff;
+  background: radial-gradient(circle at 40% 20%, #08153b, #020313 70%);
+  color: #eaf2ff;
   -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
 }
 
-/* SPLASH */
-.splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;backdrop-filter: blur(4px);z-index:999}
-.splash:not(.active){display:none}
-.splash-inner{width:92%;max-width:520px;text-align:center;padding:28px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04)}
-.splash-logo{width:72px;height:72px;object-fit:contain;margin:0 auto 8px;display:block}
-.splash h1{font-size:22px;letter-spacing:1px;margin-bottom:8px}
-.splash .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
-.loader{display:flex;gap:8px;justify-content:center}
-.loader div{width:8px;height:8px;background:var(--accent);border-radius:4px;animation:blink 1s infinite}
-@keyframes blink{0%{opacity:0.2}50%{opacity:1}100%{opacity:0.2}}
-
-/* APP */
-.app.hidden{display:none}
+/* Header */
 .top{
-  height:72px;padding:8px 12px;display:flex;align-items:center;gap:12px;
-  border-bottom:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.04));
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
-.house{width:64px;height:64px;border-radius:10px;background-size:cover;background-position:center;border:2px solid rgba(255,255,255,0.03)}
-.info{flex:1}
-.playerName{font-weight:600}
-.playerStats{font-size:13px;color:var(--muted);margin-top:4px}
-.top-right{display:flex;gap:8px;align-items:center}
-.currency{display:flex;align-items:center;gap:6px;background:var(--glass);padding:6px;border-radius:10px}
-.currency img{width:22px;height:22px;object-fit:contain}
+.top .left img#logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
+.top .center{flex:1;margin-left:12px}
+#playerName{font-weight:700}
+#playerStats{font-size:12px;color:#c7d8ff;margin-top:4px}
+.top .right{display:flex;align-items:center;gap:6px}
+.icon-small{width:22px;height:22px;border-radius:6px;object-fit:cover}
 
-/* MAIN / FARM */
-.main{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;height:calc(100% - 72px - 64px);overflow:hidden}
-.farm-area{position:relative;width:100%;max-width:720px;flex:1;border-radius:12px;overflow:hidden;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;padding:14px}
-.farm{display:grid;gap:10px;width:100%;max-width:660px}
-.grid-3{grid-template-columns:repeat(3,1fr)}
-.grid-4{grid-template-columns:repeat(4,1fr)}
-.grid-5{grid-template-columns:repeat(5,1fr)}
-.tile{aspect-ratio:1/1;background:linear-gradient(180deg,#06102a,#08143a);border-radius:12px;border:2px solid rgba(82,116,255,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s}
-.tile:active{transform:scale(.98)}
-.tile.planted{box-shadow:0 8px 20px rgba(82,116,255,0.06),0 0 12px rgba(82,116,255,0.04) inset}
-.tile .timer{position:absolute;top:6px;left:6px;font-size:11px;color:var(--muted)}
-.hint{font-size:13px;color:var(--muted);text-align:center;margin-top:6px}
+/* Main */
+main{flex:1;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+#farmWrap{position:relative;width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center}
+.house{width:160px;height:80px;background-size:cover;background-position:center;border-radius:10px;margin-bottom:10px}
+.farm{display:grid;gap:10px;width:100%;max-width:560px}
+.tile{aspect-ratio:1/1;background:var(--tile);border:2px solid var(--tile-border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;cursor:pointer;overflow:hidden}
+.tile .timer{position:absolute;top:6px;left:6px;font-size:12px;color:#a8c8ff;padding:3px 6px;border-radius:8px;background:rgba(0,0,0,0.25)}
+.tile .plantImg{width:75%;height:75%;object-fit:contain;pointer-events:none}
+.hint{font-size:13px;color:#a8c8ff}
 
-/* DRONE CANVAS */
-.drone-canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+/* Panels */
+.panel{
+  position:fixed;left:5%;width:90%;max-height:60%;bottom:68px;background:var(--card);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.04);overflow:auto;z-index:40;
+}
+.card{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-bottom:10px}
+.buyBtn{width:100%;padding:10px;background:linear-gradient(90deg,var(--accent),#3357ff);border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer}
+.close{width:100%;margin-top:8px;padding:10px;background:#27395f;border:none;border-radius:8px;color:white;cursor:pointer}
 
-/* MENU */
-.menu{height:64px;display:flex;border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.25))}
-.menu-btn{flex:1;border:0;background:none;color:#e8f1ff;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 4px;gap:6px}
-.menu-btn img{width:20px;height:20px;object-fit:contain}
+/* Menu */
+.menu{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(255,255,255,0.04);justify-content:space-around;background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.04))}
+.menu button{background:none;border:none;padding:6px;border-radius:8px}
+.menu img{width:44px;height:44px;object-fit:cover;border-radius:8px;}
 
-/* PANELS */
-.panel{position:fixed;left:6%;width:88%;max-width:780px;bottom:74px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03)}
-.panel h2{margin-bottom:8px}
-.card{background:rgba(11,20,40,0.7);padding:12px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.02)}
-.buyBtn{width:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:none;padding:10px;border-radius:8px;font-weight:700;margin-top:8px}
-.close{width:100%;background:#263555;color:white;border:none;padding:10px;border-radius:8px;margin-top:8px}
+/* VFX layer */
+.vfx-layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:30}
+#droneCanvas{position:absolute;left:0;top:0;z-index:20;pointer-events:none;width:100%;height:100%}
 
-/* responsive */
-@media (max-width:600px){
-  .top{height:62px}
-  .house{width:54px;height:54px}
-  .menu{height:58px}
-  .panel{left:4%;width:92%}
-  .farm-area{padding:8px}
+/* Responsive */
+@media (max-width:640px){
+  .house{width:110px;height:56px}
+  .farm{max-width:360px;gap:8px}
+  .menu img{width:36px;height:36px}
 }
