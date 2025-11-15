@@ -4,126 +4,93 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Cosmic Farm</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon192.png" />
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- SPLASH -->
-  <div id="splash" class="splash active">
-    <div class="splash-inner">
-      <img src="ui/btn_home.png.jpg" alt="logo" class="splash-logo" onerror="this.style.display='none'">
-      <h1>Cosmic Farm</h1>
-      <p class="sub">Initializing orbital farm...</p>
-      <div class="loader"><div></div><div></div><div></div></div>
-    </div>
-  </div>
-
-  <!-- APP -->
-  <div id="app" class="app hidden">
-
-    <!-- TOP BAR -->
+  <div id="app">
     <header class="top">
-      <div id="house" class="house"></div>
-      <div class="info">
-        <div id="playerName" class="playerName">Guest</div>
-        <div id="playerStats" class="playerStats">Frags: 0 • Lvl 1 • Drones: 0</div>
+      <div class="left">
+        <img id="logo" src="ui/logo_cosmic_farm.jpg" alt="logo" />
       </div>
-      <div class="top-right">
-        <div class="currency">
-          <img src="currency/currency_crystal.png.jpg" alt="crystal" />
-          <span id="crystalCount">0</span>
-        </div>
-        <div class="currency">
-          <img src="currency/currency_star.jpg" alt="star" />
-          <span id="starCount">0</span>
-        </div>
+      <div class="center">
+        <div id="playerName">Guest</div>
+        <div id="playerStats">Frags: 0 · Lvl 1 · Drones: 0</div>
+      </div>
+      <div class="right">
+        <img id="starIcon" src="currency/currency_star.jpg" alt="stars" class="icon-small"/>
+        <span id="starsCount">0</span>
       </div>
     </header>
 
-    <!-- MAIN -->
-    <main class="main">
-      <div id="farmArea" class="farm-area" style="background-image: url('backgrounds/bg_alien_ground.png.jpg')">
-        <div id="farm" class="farm grid-3"></div>
-        <canvas id="droneCanvas" class="drone-canvas"></canvas>
+    <main>
+      <div id="farmWrap">
+        <div id="house" class="house"></div>
+        <div id="farm" class="farm"></div>
+        <canvas id="droneCanvas"></canvas>
+        <div id="vfxLayer" class="vfx-layer"></div>
       </div>
 
-      <p class="hint">Tap a tile to plant • Tap grown crop to harvest</p>
+      <p class="hint">Tap tile to plant · Tap grown crop to harvest</p>
     </main>
 
-    <!-- PANELS -->
-    <div id="panelShop" class="panel" hidden>
+    <!-- Panels -->
+    <div class="panel" id="panelShop" hidden>
       <h2>🏪 Shop</h2>
       <div class="card">
-        <b>Drone Mk.I</b><br>Auto-collect crops<br>Price: 10 CRYSTAL
-        <button class="buyBtn" onclick="buyDroneUI()">Buy</button>
+        <b>Buy Drone (starts cheap, next ×2)</b>
+        <p>Auto-collects ready crops</p>
+        <button id="buy-drone" class="buyBtn">Buy Drone</button>
       </div>
       <div class="card">
-        <b>Upgrade Farm +1</b><br>More tiles<br>Price: 50 CRYSTAL
-        <button class="buyBtn" onclick="buyFarmUI()">Buy</button>
+        <b>Expand Farm</b>
+        <p>Increase farm grid size</p>
+        <button id="buy-farm" class="buyBtn">Expand</button>
       </div>
-      <div class="card" id="seedSelector"></div>
+      <div class="card">
+        <b>Stars Packs</b>
+        <p>Test mode: add Stars manually</p>
+        <button id="add-stars" class="buyBtn">+5 Stars (test)</button>
+      </div>
       <button class="close" onclick="closePanels()">Close</button>
     </div>
 
-    <div id="panelDrones" class="panel" hidden>
+    <div class="panel" id="panelDrones" hidden>
       <h2>🤖 Drones</h2>
-      <p>You have: <span id="droneCount">0</span></p>
-      <p>Active drones auto-collect grown crops.</p>
+      <div id="droneList"></div>
       <button class="close" onclick="closePanels()">Close</button>
     </div>
 
-    <div id="panelQuests" class="panel" hidden>
+    <div class="panel" id="panelQuests" hidden>
       <h2>📜 Quests</h2>
-      <div id="questHarvest" class="card"></div>
+      <div id="questsList"></div>
       <button class="close" onclick="closePanels()">Close</button>
     </div>
 
-    <div id="panelProfile" class="panel" hidden>
+    <div class="panel" id="panelProfile" hidden>
       <h2>👤 Profile</h2>
       <div class="card">
         <label>Name</label>
-        <input id="nameInput" type="text" placeholder="Player name" />
-        <button class="buyBtn" onclick="saveName()">Save</button>
+        <input id="nameInput" placeholder="Player name" />
+        <button class="buyBtn" id="saveName">Save</button>
       </div>
       <div class="card">
-        <label>Avatar URL</label>
-        <input id="avatarInput" type="text" placeholder="https://..." />
-        <button class="buyBtn" onclick="saveAvatar()">Save Avatar</button>
+        <label>Avatar URL (mobile: upload somewhere then paste)</label>
+        <input id="avatarUrl" placeholder="https://..." />
+        <button class="buyBtn" id="saveAvatar">Save Avatar</button>
       </div>
       <button class="close" onclick="closePanels()">Close</button>
     </div>
 
-    <div id="panelCase" class="panel" hidden>
-      <h2>🎁 Case</h2>
-      <div id="casePreview" class="card">Open a case to get items.</div>
-      <button class="buyBtn" onclick="openCase('common')">Open Common</button>
-      <button class="close" onclick="closePanels()">Close</button>
-    </div>
-
-    <!-- BOTTOM MENU -->
+    <!-- Bottom Menu -->
     <nav class="menu">
-      <button id="btnFarm" onclick="openFarm()" class="menu-btn">
-        <img src="ui/btn_home.png.jpg" alt="farm" onerror="this.style.display='none'"> Farm
-      </button>
-      <button id="btnShop" onclick="openPanel('panelShop')" class="menu-btn">
-        <img src="ui/btn_shop.png.jpg" alt="shop" onerror="this.style.display='none'"> Shop
-      </button>
-      <button id="btnDrones" onclick="openPanel('panelDrones')" class="menu-btn">
-        <img src="ui/btn_drone.png.jpg" alt="drones" onerror="this.style.display='none'"> Drones
-      </button>
-      <button id="btnCases" onclick="openPanel('panelCase')" class="menu-btn">
-        <img src="ui/btn_case.png.jpg" alt="case" onerror="this.style.display='none'"> Cases
-      </button>
-      <button id="btnProfile" onclick="openPanel('panelProfile')" class="menu-btn">
-        <img src="ui/btn_profile.png.jpg" alt="profile" onerror="this.style.display='none'"> Profile
-      </button>
+      <button onclick="openPanel('panelShop')"><img src="ui/btn_shop.jpg" alt="shop"/></button>
+      <button onclick="openPanel('panelDrones')"><img src="ui/btn_drones.jpg" alt="drones"/></button>
+      <button onclick="openPanel('panelQuests')"><img src="ui/btn_cases.jpg" alt="cases"/></button>
+      <button onclick="openPanel('panelProfile')"><img src="ui/btn_profile.jpg" alt="profile"/></button>
+      <button onclick="openFarm()"><img src="ui/btn_farm.jpg" alt="farm"/></button>
     </nav>
-
   </div>
 
-  <script src="telegram-init.js"></script>
-  <script src="api.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
