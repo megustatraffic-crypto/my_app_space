@@ -1,96 +1,84 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Cosmic Farm</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Cosmic Farm — MVP</title>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="app">
-    <header class="top">
-      <div class="left">
-        <img id="logo" src="ui/logo_cosmic_farm.jpg" alt="logo" />
-      </div>
-      <div class="center">
-        <div id="playerName">Guest</div>
-        <div id="playerStats">Frags: 0 · Lvl 1 · Drones: 0</div>
-      </div>
-      <div class="right">
-        <img id="starIcon" src="currency/currency_star.jpg" alt="stars" class="icon-small"/>
-        <span id="starsCount">0</span>
-      </div>
-    </header>
 
-    <main>
-      <div id="farmWrap">
-        <div id="house" class="house"></div>
-        <div id="farm" class="farm"></div>
-        <canvas id="droneCanvas"></canvas>
-        <div id="vfxLayer" class="vfx-layer"></div>
-      </div>
+<div id="app">
+  <!-- Background -->
+  <div class="bg-layer" id="bgLayer"></div>
 
-      <p class="hint">Tap tile to plant · Tap grown crop to harvest</p>
-    </main>
+  <!-- Top HUD -->
+  <header class="hud">
+    <div class="hud-left">
+      <div id="logoWrap">
+        <img src="ui/logo_cosmic_farm.jpg" alt="logo" id="logo" />
+      </div>
+    </div>
+    <div class="hud-center">
+      <div id="playerName">Guest</div>
+      <div id="playerStats">Frags: <span id="frags">0</span> • Lvl: <span id="lvl">1</span></div>
+    </div>
+    <div class="hud-right">
+      <img id="avatarFrame" src="vfx/avatar_frame_neon.jpg" alt="avatar" />
+    </div>
+  </header>
 
-    <!-- Panels -->
-    <div class="panel" id="panelShop" hidden>
-      <h2>🏪 Shop</h2>
-      <div class="card">
-        <b>Buy Drone (starts cheap, next ×2)</b>
-        <p>Auto-collects ready crops</p>
-        <button id="buy-drone" class="buyBtn">Buy Drone</button>
+  <!-- Main content -->
+  <main class="main">
+    <div class="house-wrap">
+      <div id="house" class="house" aria-hidden="true">
+        <img src="houses/house_lvl1.jpg" alt="house" id="houseImg" />
       </div>
-      <div class="card">
-        <b>Expand Farm</b>
-        <p>Increase farm grid size</p>
-        <button id="buy-farm" class="buyBtn">Expand</button>
-      </div>
-      <div class="card">
-        <b>Stars Packs</b>
-        <p>Test mode: add Stars manually</p>
-        <button id="add-stars" class="buyBtn">+5 Stars (test)</button>
-      </div>
-      <button class="close" onclick="closePanels()">Close</button>
     </div>
 
-    <div class="panel" id="panelDrones" hidden>
-      <h2>🤖 Drones</h2>
-      <div id="droneList"></div>
-      <button class="close" onclick="closePanels()">Close</button>
-    </div>
+    <section class="farm-container">
+      <div id="farmGrid" class="farm-grid" aria-label="Farm grid"></div>
+      <div id="hint" class="hint">Tap tile to plant • Tap grown crop to harvest</div>
+    </section>
 
-    <div class="panel" id="panelQuests" hidden>
-      <h2>📜 Quests</h2>
-      <div id="questsList"></div>
-      <button class="close" onclick="closePanels()">Close</button>
-    </div>
+    <!-- Drone canvas (visual) -->
+    <canvas id="droneCanvas" class="drone-canvas" aria-hidden="true"></canvas>
+  </main>
 
-    <div class="panel" id="panelProfile" hidden>
-      <h2>👤 Profile</h2>
-      <div class="card">
-        <label>Name</label>
-        <input id="nameInput" placeholder="Player name" />
-        <button class="buyBtn" id="saveName">Save</button>
-      </div>
-      <div class="card">
-        <label>Avatar URL (mobile: upload somewhere then paste)</label>
-        <input id="avatarUrl" placeholder="https://..." />
-        <button class="buyBtn" id="saveAvatar">Save Avatar</button>
-      </div>
-      <button class="close" onclick="closePanels()">Close</button>
-    </div>
+  <!-- Bottom Menu -->
+  <nav class="bottom-nav" role="navigation">
+    <button class="nav-btn" id="btnFarm" title="Farm">
+      <img src="ui/btn_farm.jpg" alt="farm" /> 
+      <div class="nav-label">Farm</div>
+    </button>
+    <button class="nav-btn" id="btnShop" title="Shop">
+      <img src="ui/btn_shop.jpg" alt="shop" />
+      <div class="nav-label">Shop</div>
+    </button>
+    <button class="nav-btn" id="btnCases" title="Cases">
+      <img src="ui/btn_cases.jpg" alt="cases" />
+      <div class="nav-label">Cases</div>
+    </button>
+    <button class="nav-btn" id="btnDrones" title="Drones">
+      <img src="ui/btn_drones.jpg" alt="drones" />
+      <div class="nav-label">Drones</div>
+    </button>
+    <button class="nav-btn" id="btnProfile" title="Profile">
+      <img src="ui/btn_profile.jpg" alt="profile" />
+      <div class="nav-label">Profile</div>
+    </button>
+  </nav>
 
-    <!-- Bottom Menu -->
-    <nav class="menu">
-      <button onclick="openPanel('panelShop')"><img src="ui/btn_shop.jpg" alt="shop"/></button>
-      <button onclick="openPanel('panelDrones')"><img src="ui/btn_drones.jpg" alt="drones"/></button>
-      <button onclick="openPanel('panelQuests')"><img src="ui/btn_cases.jpg" alt="cases"/></button>
-      <button onclick="openPanel('panelProfile')"><img src="ui/btn_profile.jpg" alt="profile"/></button>
-      <button onclick="openFarm()"><img src="ui/btn_farm.jpg" alt="farm"/></button>
-    </nav>
+  <!-- Panels -->
+  <div id="panel" class="panel hidden">
+    <button id="panelClose" class="panel-close">Close</button>
+    <div id="panelContent"></div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <!-- audio (optional, small click sound if you add file) -->
+  <audio id="sndHarvest" src="vfx/vfx_energy_burst.jpg" preload="auto"></audio>
+</div>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
