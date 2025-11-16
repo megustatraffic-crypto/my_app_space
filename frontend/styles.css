@@ -1,70 +1,98 @@
 :root{
-  --bg: #020313;
-  --tile: #071227;
-  --tile-border: #4259ff;
-  --accent: #5274ff;
-  --card: #0b1630;
-  --w: 100%;
+  --bg-1: #060712;
+  --panel: #0b1220;
+  --accent: linear-gradient(90deg,#5a6cff, #6df0ff);
+  --neon: #5b7eff;
+  --muted: #9fb0dc;
+  --glass: rgba(255,255,255,0.04);
+  --btn-size: 96px;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
-html,body,#app{height:100%}
-body{
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: radial-gradient(circle at 40% 20%, #08153b, #020313 70%);
-  color: #eaf2ff;
-  -webkit-font-smoothing:antialiased;
-  display:flex;
-  flex-direction:column;
-  min-height:100vh;
+/* Reset */
+*{box-sizing:border-box}
+html,body,#app{height:100%;margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+body{background:var(--bg-1); color:#eaf0ff; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+
+/* Background layer */
+.bg-layer{
+  position:fixed; inset:0; z-index:0;
+  background-image: url('backgrounds/bg_alien_ground.jpg');
+  background-size: cover; background-position:center;
+  filter:contrast(1.02) saturate(1.05) brightness(0.9);
+  opacity:0.95;
 }
 
-/* Header */
-.top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:10px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.04));
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+/* Layout */
+#app{position:relative; min-height:100vh; display:flex; flex-direction:column; align-items:stretch; z-index:1;}
+
+/* HUD */
+.hud{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:8px 12px; z-index:5;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05));
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  backdrop-filter: blur(6px);
 }
-.top .left img#logo{width:44px;height:44px;border-radius:10px;object-fit:cover}
-.top .center{flex:1;margin-left:12px}
-#playerName{font-weight:700}
-#playerStats{font-size:12px;color:#c7d8ff;margin-top:4px}
-.top .right{display:flex;align-items:center;gap:6px}
-.icon-small{width:22px;height:22px;border-radius:6px;object-fit:cover}
+.hud-left,#logoWrap{display:flex;align-items:center}
+#logo{height:36px;border-radius:8px;object-fit:cover}
+.hud-center{flex:1;text-align:center}
+#playerName{font-weight:700; font-size:14px; color:#fff}
+#playerStats{font-size:12px;color:var(--muted); margin-top:3px}
+.hud-right img{width:44px;height:44px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,0.06)}
 
 /* Main */
-main{flex:1;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
-#farmWrap{position:relative;width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center}
-.house{width:160px;height:80px;background-size:cover;background-position:center;border-radius:10px;margin-bottom:10px}
-.farm{display:grid;gap:10px;width:100%;max-width:560px}
-.tile{aspect-ratio:1/1;background:var(--tile);border:2px solid var(--tile-border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;cursor:pointer;overflow:hidden}
-.tile .timer{position:absolute;top:6px;left:6px;font-size:12px;color:#a8c8ff;padding:3px 6px;border-radius:8px;background:rgba(0,0,0,0.25)}
-.tile .plantImg{width:75%;height:75%;object-fit:contain;pointer-events:none}
-.hint{font-size:13px;color:#a8c8ff}
+.main{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px; gap:10px; position:relative; z-index:3;}
 
-/* Panels */
-.panel{
-  position:fixed;left:5%;width:90%;max-height:60%;bottom:68px;background:var(--card);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.04);overflow:auto;z-index:40;
+/* House */
+.house-wrap{width:100%; display:flex; justify-content:center; margin-top:6px}
+.house{width:120px;height:120px; display:flex; align-items:center; justify-content:center; transform:translateY(0); transition:transform 0.6s ease, box-shadow 0.3s ease;}
+.house:hover{transform:translateY(-6px)}
+.house img{width:100%; height:100%; object-fit:contain; border-radius:10px; filter:drop-shadow(0 6px 18px rgba(50,80,160,0.25));}
+
+/* Farm area */
+.farm-container{width:100%; max-width:520px; display:flex; flex-direction:column; align-items:center; gap:8px}
+.farm-grid{width:100%; display:grid; gap:8px; grid-template-columns: repeat(3, 1fr); padding:6px; background:linear-gradient(180deg, rgba(10,12,24,0.35), rgba(6,8,18,0.35)); border-radius:14px; border:1px solid rgba(255,255,255,0.03)}
+.tile{
+  aspect-ratio:1/1; border-radius:12px; background: linear-gradient(180deg,#071022,#071a2f);
+  border:2px solid rgba(90,110,255,0.15); display:flex; align-items:center; justify-content:center; font-size:26px; color:#dff0ff;
+  position:relative; overflow:hidden; cursor:pointer; transition:transform .14s ease, box-shadow .14s;
 }
-.card{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-bottom:10px}
-.buyBtn{width:100%;padding:10px;background:linear-gradient(90deg,var(--accent),#3357ff);border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer}
-.close{width:100%;margin-top:8px;padding:10px;background:#27395f;border:none;border-radius:8px;color:white;cursor:pointer}
+.tile:active{transform:scale(.98)}
+.tile.planted{animation:growPulse 1.2s infinite alternate}
+.tile .timer{position:absolute; top:6px; left:6px; font-size:11px; color:#9fb0dc; background:rgba(0,0,0,0.18); padding:3px 6px; border-radius:8px}
 
-/* Menu */
-.menu{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(255,255,255,0.04);justify-content:space-around;background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.04))}
-.menu button{background:none;border:none;padding:6px;border-radius:8px}
-.menu img{width:44px;height:44px;object-fit:cover;border-radius:8px;}
+@keyframes growPulse {
+  0%{ box-shadow:0 0 6px rgba(92,120,255,0.12); transform:scale(1.00) }
+  100%{ box-shadow:0 0 16px rgba(92,160,255,0.22); transform:scale(1.04) }
+}
 
-/* VFX layer */
-.vfx-layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:30}
-#droneCanvas{position:absolute;left:0;top:0;z-index:20;pointer-events:none;width:100%;height:100%}
+/* hint text */
+.hint{font-size:12px;color:var(--muted); text-align:center; margin-top:6px}
 
-/* Responsive */
-@media (max-width:640px){
-  .house{width:110px;height:56px}
-  .farm{max-width:360px;gap:8px}
-  .menu img{width:36px;height:36px}
+/* Drone canvas overlay */
+.drone-canvas{position:absolute; left:0; top:0; pointer-events:none; width:100%; max-width:520px; height: calc( (100vw < 520px ? (100vw - 32px) : 520px) );}
+
+/* panel */
+.panel{position:fixed; left:5%; right:5%; bottom:110px; background:var(--panel); border-radius:14px; padding:12px; z-index:10; box-shadow:0 10px 30px rgba(2,6,30,0.6); border:1px solid rgba(255,255,255,0.03)}
+.panel.hidden{display:none}
+.panel-close{position:absolute; right:14px; top:10px; background:none;border:none;color:var(--muted); font-weight:600; cursor:pointer}
+
+/* bottom menu */
+.bottom-nav{position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:space-around; align-items:center; gap:6px; padding:8px 8px; background:linear-gradient(180deg, rgba(3,6,20,0.75), rgba(3,6,20,0.95)); border-top:1px solid rgba(255,255,255,0.03); z-index:8}
+.nav-btn{width:var(--btn-size); height:var(--btn-size); border-radius:12px; background:var(--glass); border:1px solid rgba(255,255,255,0.03); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:6px; color:#fff}
+.nav-btn img{width:56px; height:56px; object-fit:cover; border-radius:10px}
+.nav-label{font-size:11px; color:var(--muted); margin-top:2px}
+
+/* small screens */
+@media (max-width:420px){
+  .farm-grid{gap:6px}
+  .house{width:96px;height:96px}
+  :root{--btn-size:84px}
+}
+
+/* larger screens: center content */
+@media (min-width:900px){
+  .main{padding:18px}
+  .farm-grid{max-width:640px}
+  .house{width:160px;height:160px}
 }
