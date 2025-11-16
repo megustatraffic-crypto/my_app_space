@@ -1,396 +1,303 @@
-// app.js - Cosmic Farm frontend (uses assets in frontend/*)
-// NOTE: paths assume your structure exactly as uploaded (jpg files)
+// app.js - frontend V2 (clean MVP)
+// mobile-first, metal sci-fi, grid 3x3, house centered
+const STORAGE_KEY = "cosmic_farm_v2_state";
 
-const STORAGE_KEY = 'cosmic_farm_state_v3';
-const BASE_GROW_MS = 8000; // baseline normal
-const MAX_FARM_SIZE = 7;
-const DRONE_INTERVAL_MS = 2200;
-const DRONE_SPEED = 0.5; // px/ms
-
-// assets getters (jpg)
+// --- default assets (paths as in your repo)
 const ASSETS = {
-  bg: 'backgrounds/bg_alien_ground.jpg',
-  house: (lvl) => {
-    if(lvl >= 10) return 'houses/house_lvl10.jpg';
-    if(lvl >= 6) return 'houses/house_lvl6.jpg';
-    if(lvl >= 3) return 'houses/house_lvl3.jpg';
-    return 'houses/house_lvl1.jpg';
+  bg: "backgrounds/bg_alien_ground.jpg",
+  house: "houses/house_lvl1.jpg",
+  drone: "drones/drone_mk1.jpg",
+  caseClosed: "cases/case_common_closed.jpg",
+  btns: {
+    farm: "ui/btn_farm.jpg",
+    shop: "ui/btn_shop.jpg",
+    cases: "ui/btn_cases.jpg",
+    drones: "ui/btn_drones.jpg",
+    profile: "ui/btn_profile.jpg"
   },
-  droneImg: (i) => `drones/drone_mk${Math.min(5, Math.max(1, i))}.jpg`,
-  plantImg: (seed,stage) => `plants/plant_${seed}_stage${stage}.jpg`,
-  vfxBurst: 'vfx/vfx_energy_burst.jpg',
-  vfxFlash: 'vfx/vfx_flash_small.jpg',
-  starIcon: 'currency/currency_star.jpg',
-  coinIcon: 'currency/crystal_coin.jpg'
+  vfxFlash: "vfx/vfx_flash_small.jpg",
+  avatarFrame: "vfx/avatar_frame_neon.jpg",
+  logo: "ui/logo_cosmic_farm.jpg"
 };
 
-// seeds definitions (economy)
-const SEEDS = {
-  basic: {id:'basic',label:'Basic', price:0.5, timeMul:1, yield:1},
-  fast:  {id:'fast', label:'Fast',  price:5,   timeMul:0.6, yield:1.2},
-  premium:{id:'premium',label:'Premium',price:15,timeMul:1.4,yield:2.5},
-  cosmic:{id:'cosmic',label:'Cosmic',price:50,timeMul:2.2,yield:6},
-  alien: {id:'alien', label:'Alien', price:100,timeMul:3.0,yield:12}
-};
+// --- initial state
+let state = loadState();
 
-function now(){return Date.now();}
-
-function defaultState(){
-  return {
-    playerName: 'Guest',
-    avatar: '',
-    frags: 0,
-    stars: 0,
-    level: 1,
-    farmSize: 3,
-    farm: Array(9).fill().map(()=>({status:'empty', seed:'basic', plantedAt:0})),
-    drones: 0,
-    dronePrices: [15,30,60,120,240,480,960,1920,3840,7680], // doubling
-    quests: {harvested:0, droneBought:0, lastQuestDay:0},
-    selectedSeed: 'basic',
-    harvestedThisSeason: 0,
-    seasonStart: now()
-  };
-}
-
-let state = (function load(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){console.warn(e)}
-  const s = defaultState();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-  return s;
-})();
-
-function save(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+// ensure farm size 3x3 minimal
+if(!state.farm || state.farm.length < 9){
+  state.farmSize = 3;
+  state.farm = Array(state.farmSize*state.farmSize).fill().map(()=>makeEmptyTile());
+  saveState();
 }
 
 // DOM refs
-const farmEl = document.getElementById('farm');
-const houseEl = document.getElementById('house');
-const statsEl = document.getElementById('playerStats');
-const nameEl = document.getElementById('playerName');
-const starsCountEl = document.getElementById('starsCount');
-const vfxLayer = document.getElementById('vfxLayer');
-const droneCanvas = document.getElementById('droneCanvas');
-const ctx = droneCanvas.getContext ? droneCanvas.getContext('2d') : null;
-let canvasEnabled = !!ctx;
+const farmGrid = document.getElementById("farmGrid");
+const fragsEl = document.getElementById("frags");
+const lvlEl = document.getElementById("lvl");
+const playerNameEl = document.getElementById("playerName");
+const houseImg = document.getElementById("houseImg");
+const bgLayer = document.getElementById("bgLayer");
+const panel = document.getElementById("panel");
+const panelContent = document.getElementById("panelContent");
+const panelClose = document.getElementById("panelClose");
+const droneCanvas = document.getElementById("droneCanvas");
 
-function ensureFarmLength(){
-  while(state.farm.length < state.farmSize*state.farmSize) state.farm.push({status:'empty',seed:'basic',plantedAt:0});
-  while(state.farm.length > state.farmSize*state.farmSize) state.farm.pop();
+// set assets
+document.getElementById("logo").src = ASSETS.logo;
+document.getElementById("avatarFrame").src = ASSETS.avatarFrame;
+bgLayer.style.backgroundImage = `url("${ASSETS.bg}")`;
+houseImg.src = ASSETS.house;
+
+// bottom buttons
+document.getElementById("btnFarm").addEventListener("click", ()=>{ closePanel(); render(); });
+document.getElementById("btnShop").addEventListener("click", ()=> openPanel("shop"));
+document.getElementById("btnCases").addEventListener("click", ()=> openPanel("cases"));
+document.getElementById("btnDrones").addEventListener("click", ()=> openPanel("drones"));
+document.getElementById("btnProfile").addEventListener("click", ()=> openPanel("profile"));
+panelClose.addEventListener("click", closePanel);
+
+// canvas for drone visual
+let ctx = null;
+let droneImg = new Image();
+droneImg.src = ASSETS.drone;
+if(droneCanvas && droneCanvas.getContext){
+  ctx = droneCanvas.getContext("2d");
+  resizeCanvas();
+  window.addEventListener("resize", ()=>{ resizeCanvas(); drawLoop(); });
 }
 
-function growthMs(seed){
-  const s = SEEDS[seed] || SEEDS.basic;
-  const levelMul = Math.max(0.7, 1 - (state.level-1)*0.03);
-  return Math.max(1000, Math.floor(BASE_GROW_MS * s.timeMul * levelMul));
+// --- helper functions
+function makeEmptyTile(){ return {status:"empty", seed:"basic", plantedAt:0}; }
+function now(){ return Date.now(); }
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.warn("loadState error", e); }
+  return { frags: 5, level:1, farmSize:3, farm:[], drones:0, quests:{harvested:0,dronesBought:0}, selectedSeed:"basic", playerName:"Guest" };
 }
 
+// xp/level (simple)
 function xpNeeded(lvl){ return Math.floor(10 * Math.pow(lvl, 1.6)); }
 
+// --- render farm
 function render(){
-  // house
-  houseEl.style.backgroundImage = `url(${ASSETS.house(state.level)})`;
+  fragsEl.innerText = state.frags;
+  lvlEl.innerText = state.level;
+  playerNameEl.innerText = state.playerName || "Guest";
 
-  // stats
-  nameEl.innerText = state.playerName || 'Guest';
-  statsEl.innerText = `Frags: ${Math.floor(state.frags)} · Lvl ${state.level} · Drones ${state.drones}`;
-  starsCountEl.innerText = state.stars;
+  // ensure farm array length
+  while(state.farm.length < state.farmSize * state.farmSize) state.farm.push(makeEmptyTile());
 
-  // farm grid
-  ensureFarmLength();
-  farmEl.style.gridTemplateColumns = `repeat(${state.farmSize}, 1fr)`;
-  farmEl.innerHTML = '';
-  state.farm.forEach((tile,i)=>{
-    const el = document.createElement('div');
-    el.className = 'tile';
-    if(tile.status === 'empty'){
-      el.innerHTML = `<div class="empty-dot"></div>`;
-    } else if(tile.status === 'growing'){
-      el.classList.add('planted');
-      const elapsed = now() - tile.plantedAt;
-      const total = growthMs(tile.seed);
-      const left = Math.max(0, Math.ceil((total - elapsed)/1000));
-      el.innerHTML = `<img class="plantImg" src="${ASSETS.plantImg(tile.seed,1)}" alt="plant"/><div class="timer">${left}s</div>`;
-      if(elapsed >= total) tile.status = 'grown';
-    } else if(tile.status === 'grown'){
-      el.innerHTML = `<img class="plantImg" src="${ASSETS.plantImg(tile.seed,2)}" alt="grown"/>`;
+  // center house: we will keep house visual separate; farm is grid only
+  farmGrid.style.gridTemplateColumns = `repeat(${state.farmSize}, 1fr)`;
+  farmGrid.innerHTML = "";
+  state.farm.forEach((tile, i)=>{
+    const el = document.createElement("div");
+    el.className = "tile";
+    if(tile.status === "empty"){
+      el.innerHTML = `<div class="dot-empty" aria-hidden="true"></div>`;
+    } else if(tile.status === "growing"){
+      el.classList.add("planted");
+      const left = Math.max(0, Math.ceil((tile.plantedAt + growthMs(tile.seed) - now())/1000));
+      el.innerHTML = `<div class="seed-emoji">🌱</div><div class="timer">${left}s</div>`;
+      if(left <= 0){ tile.status = "grown"; saveState(); render(); return; }
+    } else if(tile.status === "grown"){
+      el.innerHTML = `<div style="font-size:26px">✅</div>`;
     }
-    el.addEventListener('click', ()=>onTileClick(i));
-    farmEl.appendChild(el);
+    el.addEventListener("click", ()=> onTileClick(i));
+    farmGrid.appendChild(el);
   });
-
-  resizeCanvas();
-  save();
+  saveState();
+}
+function growthMs(seedId){
+  const base = 6000; // baseline 6s for demo
+  const seedMul = seedId === "basic"?1 : (seedId==="fast"?0.6:1.4);
+  const levelFactor = Math.max(0.6, 1 - (state.level-1)*0.03);
+  return Math.max(1200, Math.floor(base * seedMul * levelFactor * Math.pow(1.3, state.level-1)));
 }
 
+// tile click
 function onTileClick(i){
-  const tile = state.farm[i];
-  if(tile.status === 'empty'){
-    // plant selected seed
-    tile.status = 'growing';
-    tile.seed = state.selectedSeed || 'basic';
-    tile.plantedAt = now();
-    save(); render();
-  } else if(tile.status === 'grown'){
+  const t = state.farm[i];
+  if(t.status === "empty"){
+    t.status = "growing";
+    t.seed = state.selectedSeed || "basic";
+    t.plantedAt = now();
+    saveState(); render();
+  } else if(t.status === "grown"){
     // harvest
-    const seed = SEEDS[tile.seed] || SEEDS.basic;
-    state.frags += seed.yield;
-    state.quests.harvested = (state.quests.harvested||0) + seed.yield;
-    state.harvestedThisSeason = (state.harvestedThisSeason||0) + seed.yield;
-    tile.status = 'empty'; tile.plantedAt = 0;
-    popVfxAtTile(i, ASSETS.vfxBurst);
+    const yieldAmt = seedYield(t.seed);
+    state.frags += yieldAmt;
+    state.quests.harvested = (state.quests.harvested||0) + yieldAmt;
+    t.status = "empty"; t.plantedAt = 0;
     checkLevel();
-    save(); render();
+    saveState(); render();
+    // flash effect
+    flashEffect();
   }
 }
 
-// level up & expand
+// seed yields
+function seedYield(seedId){
+  if(seedId === "basic") return 1;
+  if(seedId === "fast") return 1;
+  if(seedId === "premium") return 2;
+  return 1;
+}
+
+// level check
 function checkLevel(){
   const need = xpNeeded(state.level);
   if(state.frags >= need){
     state.frags -= need;
     state.level++;
-    if(state.level === 2) state.farmSize = 3;
-    // expand every 2 levels or at thresholds:
-    if(state.level === 4 && state.farmSize < 4) state.farmSize = 4;
-    if(state.level === 6 && state.farmSize < 5) state.farmSize = 5;
-    if(state.level === 9 && state.farmSize < 6) state.farmSize = 6;
-    if(state.level === 12 && state.farmSize < 7) state.farmSize = 7;
-    // refill farm to new size
-    ensureFarmLength();
+    // expand farm every 2 levels until 7
+    if(state.farmSize < 7 && state.level % 2 === 0) state.farmSize++;
   }
-}
-
-// VFX helper
-function popVfxAtTile(index, imgPath){
-  const tileNodes = Array.from(document.querySelectorAll('.tile'));
-  const target = tileNodes[index];
-  if(!target) return;
-  const rect = target.getBoundingClientRect();
-  const parentRect = document.getElementById('farmWrap').getBoundingClientRect();
-  const img = document.createElement('img');
-  img.src = imgPath;
-  img.className = 'vfx';
-  img.style.position = 'absolute';
-  img.style.left = (rect.left - parentRect.left + rect.width/4) + 'px';
-  img.style.top = (rect.top - parentRect.top + rect.height/6) + 'px';
-  img.style.width = (rect.width*0.9)+'px';
-  img.style.opacity = '0.95';
-  img.style.pointerEvents = 'none';
-  vfxLayer.appendChild(img);
-  setTimeout(()=>{ img.style.transition = 'opacity .6s transform .6s'; img.style.opacity = 0; img.style.transform = 'scale(1.25)'; },50);
-  setTimeout(()=>img.remove(),900);
 }
 
 // panels
-function openPanel(id){
-  closePanels();
-  const el = document.getElementById(id);
-  if(el) el.hidden = false;
-  if(id === 'panelDrones') renderDronePanel();
-  if(id === 'panelQuests') renderQuests();
+function openPanel(name){
+  panelContent.innerHTML = "";
+  panel.classList.remove("hidden");
+  if(name === "shop"){
+    panelContent.innerHTML = `
+      <h3>Shop</h3>
+      <div class="card"><b>Buy Drone (starter)</b><p>Cost: 10 FRAG (max 10 drones)</p><button id="buyDroneBtn">Buy</button></div>
+      <div class="card"><b>Upgrade Farm +1</b><p>Cost: 50 FRAG</p><button id="buyFarmBtn">Buy</button></div>
+    `;
+    document.getElementById("buyDroneBtn").onclick = buyDrone;
+    document.getElementById("buyFarmBtn").onclick = buyFarm;
+  } else if(name === "cases"){
+    panelContent.innerHTML = `
+      <h3>Cases</h3>
+      <div class="card center"><img src="${ASSET("caseClosed")}" style="max-width:180px;border-radius:10px"/></div>
+      <div class="card"><button id="openCaseBtn">Open Case (10 FRAG)</button></div>
+    `;
+    document.getElementById("openCaseBtn").onclick = openCase;
+  } else if(name === "drones"){
+    panelContent.innerHTML = `
+      <h3>Drones</h3>
+      <div class="card"><img src="${ASSET("drone")}" style="width:120px"/></div>
+      <div class="card">You have: <b>${state.drones}</b></div>
+    `;
+  } else if(name === "profile"){
+    panelContent.innerHTML = `
+      <h3>Profile</h3>
+      <div class="card">Name: <input id="nameInput" value="${state.playerName || 'Guest'}" /></div>
+      <div class="card"><button id="saveNameBtn">Save</button></div>
+    `;
+    document.getElementById("saveNameBtn").onclick = ()=>{
+      const v = document.getElementById("nameInput").value || "Guest";
+      state.playerName = v; saveState(); render(); closePanel();
+    };
+  }
 }
-function closePanels(){
-  Array.from(document.querySelectorAll('.panel')).forEach(p=>p.hidden = true);
-}
-function openFarm(){ closePanels(); }
+function closePanel(){ panel.classList.add("hidden"); }
 
-// shop actions
-document.getElementById('buy-drone').addEventListener('click', ()=>{
-  const count = state.drones;
-  if(count >= 10){ alert('Max 10 freeable drones'); return; }
-  const price = state.dronePrices[count] || (15 * Math.pow(2,count));
-  if(state.frags < price){ alert('Not enough FRAG'); return; }
+// shop functions
+function buyDrone(){
+  // max 10 drones; price increases (first 10 at 10 then x2)
+  const current = state.drones || 0;
+  if(current >= 10) return alert("Max drones reached");
+  const price = Math.floor(10 * Math.pow(2, current)); // 10,20,40...
+  if(state.frags < price) return alert("Not enough FRAG");
   state.frags -= price;
   state.drones++;
-  state.quests.droneBought = (state.quests.droneBought||0)+1;
-  save(); render();
-  alert('Drone purchased!');
-});
-document.getElementById('buy-farm').addEventListener('click', ()=>{
-  if(state.farmSize >= MAX_FARM_SIZE){ alert('Max farm size'); return; }
-  if(state.frags < 50){ alert('Expand costs 50 FRAG'); return; }
-  state.frags -= 50;
-  state.farmSize++;
-  ensureFarmLength(); save(); render();
-});
-document.getElementById('add-stars').addEventListener('click', ()=>{
-  state.stars += 5; save(); render(); alert('+5 Stars (test)');
-});
-document.getElementById('saveName').addEventListener('click', ()=>{
-  const val = document.getElementById('nameInput').value.trim();
-  if(val) state.playerName = val;
-  save(); render(); closePanels(); alert('Name saved');
-});
-document.getElementById('saveAvatar').addEventListener('click', ()=>{
-  const val = document.getElementById('avatarUrl').value.trim();
-  if(val) state.avatar = val;
-  save(); render(); closePanels(); alert('Avatar saved');
-});
-
-// drone system
-let dronesSim = [];
-function ensureDrones(){
-  while(dronesSim.length < state.drones) {
-    dronesSim.push({x:20 + dronesSim.length*30, y:20, target:null, status:'idle'});
-  }
-  while(dronesSim.length > state.drones) dronesSim.pop();
+  saveState(); render(); closePanel();
 }
-ensureDrones();
+function buyFarm(){
+  const price = 50;
+  if(state.frags < price) return alert("Not enough FRAG");
+  if(state.farmSize >= 7) return alert("Max farm size");
+  state.frags -= price; state.farmSize++; while(state.farm.length < state.farmSize*state.farmSize) state.farm.push(makeEmptyTile());
+  saveState(); render(); closePanel();
+}
+function openCase(){
+  if(state.frags < 10) return alert("Not enough FRAG");
+  state.frags -= 10;
+  // random reward small demo logic
+  const roll = Math.random();
+  if(roll < 0.6) state.frags += 8;
+  else if(roll < 0.9) { state.frags += 25; state.drones += 1; }
+  else { state.frags += 60; state.level +=1; }
+  saveState(); render(); closePanel();
+}
 
-function findGrownTile(){ for(let i=0;i<state.farm.length;i++) if(state.farm[i].status==='grown') return i; return null; }
+// flash effect (simple)
+function flashEffect(){
+  const el = document.createElement("div");
+  el.style.position = "fixed"; el.style.left = "50%"; el.style.top = "40%";
+  el.style.transform = "translate(-50%,-50%)"; el.style.pointerEvents = "none";
+  el.style.width = "160px"; el.style.height = "160px"; el.style.borderRadius = "50%";
+  el.style.background = "radial-gradient(circle, rgba(100,170,255,0.28), transparent 40%)";
+  el.style.zIndex = 9999; el.style.opacity = "0";
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>{ el.style.transition = "all 420ms ease-out"; el.style.opacity = "1"; el.style.transform = "translate(-50%,-50%) scale(1.2)"; });
+  setTimeout(()=>{ el.style.opacity = "0"; el.style.transform = "translate(-50%,-50%) scale(0.6)"; }, 420);
+  setTimeout(()=> el.remove(), 900);
+}
 
-function droneTick(){
-  ensureDrones();
-  dronesSim.forEach(d=>{
-    if(d.status === 'idle'){
-      const idx = findGrownTile();
-      if(idx !== null){
-        d.target = idx; d.status = 'to';
-      }
+// cases: asset accessor
+function ASSET(key){
+  if(key === "caseClosed") return ASSETS.caseClosed || "cases/case_common_closed.jpg";
+  if(key === "drone") return ASSETS.drone || "drones/drone_mk1.jpg";
+  return "";
+}
+
+// canvas & drone simple animation
+let droneObjs = [];
+function resizeCanvas(){
+  if(!droneCanvas) return;
+  const rect = farmGrid.getBoundingClientRect();
+  droneCanvas.width = rect.width; droneCanvas.height = rect.height;
+  droneCanvas.style.left = rect.left + "px";
+  droneCanvas.style.top = rect.top + "px";
+}
+function drawLoop(){
+  if(!ctx) return;
+  ctx.clearRect(0,0,droneCanvas.width, droneCanvas.height);
+  // ensure drones
+  while(droneObjs.length < (state.drones||0)) droneObjs.push({x:20+droneObjs.length*22,y:20,status:"idle",target:null});
+  while(droneObjs.length > (state.drones||0)) droneObjs.pop();
+  // simple float
+  droneObjs.forEach((d,i)=>{
+    d.y += Math.sin(Date.now()/400 + i)*0.2;
+    // draw image small
+    if(droneImg.complete){
+      ctx.drawImage(droneImg, d.x, d.y, 32, 32);
+    } else {
+      // fallback circle
+      ctx.fillStyle = "rgba(120,160,255,0.9)";
+      ctx.beginPath(); ctx.arc(d.x, d.y, 8,0,Math.PI*2); ctx.fill();
     }
   });
+  requestAnimationFrame(drawLoop);
 }
-setInterval(droneTick, DRONE_INTERVAL_MS);
 
-// canvas animation
-let last = performance.now();
-function resizeCanvas(){
-  const rect = document.getElementById('farmWrap').getBoundingClientRect();
-  droneCanvas.width = rect.width; droneCanvas.height = rect.height;
-  droneCanvas.style.left = '0px'; droneCanvas.style.top = '0px';
-}
-function animate(now){
-  const dt = now - last; last = now;
-  if(ctx){
-    ctx.clearRect(0,0,droneCanvas.width, droneCanvas.height);
-    ensureDrones();
-    const cols = state.farmSize;
-    const rect = farmEl.getBoundingClientRect();
-    const farmRect = document.getElementById('farmWrap').getBoundingClientRect();
-    const cellW = farmRect.width / cols;
-    const rows = Math.ceil(state.farm.length/cols);
-    const cellH = (farmRect.width / cols) * (1); // square approx
-    dronesSim.forEach((d, id)=>{
-      if(!d.x) d.x = 20 + id*30; if(!d.y) d.y = 20;
-      if(d.status === 'to' && d.target !== null){
-        const r = Math.floor(d.target / cols);
-        const c = d.target % cols;
-        const targetX = c*cellW + cellW/2;
-        const targetY = r*cellW + cellW/2 + 30; // adjust for house offset
-        const dx = targetX - d.x; const dy = targetY - d.y;
-        const dist = Math.hypot(dx,dy);
-        const step = DRONE_SPEED * dt * 1.2;
-        if(dist <= step){
-          d.x = targetX; d.y = targetY;
-          // harvest if grown
-          if(state.farm[d.target] && state.farm[d.target].status === 'grown'){
-            const seed = SEEDS[state.farm[d.target].seed]||SEEDS.basic;
-            state.frags += seed.yield;
-            state.quests.harvested = (state.quests.harvested||0) + seed.yield;
-            state.harvestedThisSeason = (state.harvestedThisSeason||0) + seed.yield;
-            state.farm[d.target].status = 'empty'; state.farm[d.target].plantedAt = 0;
-            popVfxAtTile(d.target, ASSETS.vfxFlash);
-            checkLevel(); save(); render();
-          }
-          d.status = 'return';
-        } else {
-          d.x += dx/dist * step; d.y += dy/dist * step;
-        }
-      } else if(d.status === 'return'){
-        const homeX = 20 + id*30, homeY = 20;
-        const dx = homeX - d.x, dy = homeY - d.y; const dist = Math.hypot(dx,dy);
-        const step = DRONE_SPEED * dt * 1.2;
-        if(dist <= step){ d.x = homeX; d.y = homeY; d.status = 'idle'; d.target = null; }
-        else { d.x += dx/dist * step; d.y += dy/dist * step; }
-      }
-      // draw drone image
-      const img = new Image();
-      img.src = ASSETS.droneImg(id+1);
-      const w = 36, h = 36;
-      ctx.drawImage(img, d.x - w/2, d.y - h/2, w, h);
-    });
-  }
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-
-// auto grow check
+// auto-grow checker
 setInterval(()=>{
-  let ch=false;
-  for(const tile of state.farm){
-    if(tile.status==='growing'){
-      if(now() - tile.plantedAt >= growthMs(tile.seed)){
-        tile.status='grown'; ch=true;
-      }
-    }
-  }
-  if(ch) render();
+  let changed=false;
+  state.farm.forEach(t=>{ if(t.status==="growing"){ if(now() - t.plantedAt >= growthMs(t.seed)) { t.status="grown"; changed=true; } } });
+  if(changed){ saveState(); render(); }
 }, 800);
 
-// quests
-function renderQuests(){
-  const el = document.getElementById('questsList');
-  el.innerHTML = '';
-  const q1 = document.createElement('div');
-  q1.className='card';
-  q1.innerHTML = `<b>Harvest 5</b><p>Progress ${Math.floor(state.quests.harvested||0)}/5</p>${(state.quests.harvested||0)>=5 ? '<button onclick="claimHarvest()">Claim">Claim</button>' : ''}`;
-  el.appendChild(q1);
-  const q2 = document.createElement('div');
-  q2.className='card';
-  q2.innerHTML = `<b>Buy 1 Drone</b><p>${(state.quests.droneBought||0)}/1</p>${(state.quests.droneBought||0)>=1 ? '<button onclick="claimDrone()">Claim">Claim</button>' : ''}`;
-  el.appendChild(q2);
-}
-window.openPanel = openPanel;
-window.closePanels = closePanels;
-window.openFarm = openFarm;
-window.claimHarvest = function(){
-  if((state.quests.harvested||0) < 5) return alert('Not ready');
-  state.quests.harvested -= 5; state.frags += 5; save(); render(); alert('Claimed 5 FRAG');
-};
-window.claimDrone = function(){
-  if((state.quests.droneBought||0) < 1) return alert('Not ready');
-  state.quests.droneBought -= 1; state.frags += 10; save(); render(); alert('Claimed 10 FRAG');
-};
-
-// drone panel
-function renderDronePanel(){
-  const el = document.getElementById('droneList'); el.innerHTML='';
-  const p = document.createElement('div'); p.className='card';
-  p.innerHTML = `<b>Your drones</b><p>Count: ${state.drones}</p>`;
-  el.appendChild(p);
-}
-
-// initial UI wiring for seed selection (small)
-function buildSeedSelector(){
-  const container = document.createElement('div'); container.className='card';
-  container.innerHTML = `<b>Seeds</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>`;
-  const inner = container.querySelector('div');
-  for(const s of Object.values(SEEDS)){
-    const btn = document.createElement('button');
-    btn.className='buyBtn';
-    btn.style.width='48%';
-    btn.style.padding='8px';
-    btn.innerText = `${s.label} — ${s.price} FRAG`;
-    btn.addEventListener('click', ()=>{
-      if(s.price && state.frags < s.price) return alert('Not enough FRAG');
-      if(s.price) state.frags -= s.price;
-      state.selectedSeed = s.id; save(); render(); alert(`Selected ${s.label}`);
-    });
-    inner.appendChild(btn);
+// init
+function bootstrap(){
+  // ensure minimal farm
+  if(!state.farm || state.farm.length === 0){
+    state.farmSize = 3; state.farm = Array(9).fill().map(()=>makeEmptyTile());
+    saveState();
   }
-  const shopPanel = document.getElementById('panelShop');
-  shopPanel.insertBefore(container, shopPanel.querySelector('.close'));
+  // selected seed default
+  if(!state.selectedSeed) state.selectedSeed="basic";
+  render();
+  drawLoop();
+  window.addEventListener("resize", ()=>{ resizeCanvas(); });
 }
+bootstrap();
 
-buildSeedSelector();
-render();
-resizeCanvas();
-window.addEventListener('resize', ()=>{ resizeCanvas(); render(); });
-
-// initial ensure drones
-ensureDrones();
+// expose small helpers for debug
+window._state = state;
