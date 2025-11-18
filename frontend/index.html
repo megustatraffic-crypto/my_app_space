@@ -8,76 +8,50 @@
 </head>
 <body>
 
-<div id="game-container">
+<div id="app">
 
     <!-- Planet Banner -->
-    <div id="planet-header">
-        <img src="planets/terra/terra_banner.jpg" id="planet-banner">
+    <div id="planet-banner">
+        <img src="planets/terra/terra_banner.jpg">
     </div>
 
-    <!-- Location selector -->
-    <div id="location-tabs">
-        <button class="location-btn" data-loc="career">Career</button>
-        <button class="location-btn" data-loc="forest">Forest</button>
-        <button class="location-btn" data-loc="lake">Lake</button>
+    <!-- Locations -->
+    <div id="tabs">
+        <button data-loc="career">Career</button>
+        <button data-loc="forest">Forest</button>
+        <button data-loc="lake">Lake</button>
     </div>
 
-    <!-- Location image -->
-    <div id="location-display">
-        <img id="location-img" src="location/terra/terra_career.jpg">
+    <!-- Tap area -->
+    <div id="tap-zone">
+        <img id="loc-img" src="location/terra/terra_career.jpg">
+        <img id="res-img" class="tap-target" src="resources/terra/r1_iron_ore.png">
     </div>
 
-    <!-- Tap zone -->
-    <div id="tap-area">
-        <img id="resource-img" src="resources/terra/r1_iron_ore.png">
-        <div id="tap-text">Tap to mine!</div>
-    </div>
-
-    <!-- Resource counters -->
-    <div id="resource-bar">
-        <div class="res-item">
-            <img src="resources/terra/r1_iron_ore.png">
-            <span id="count-iron">0</span>
-        </div>
-        <div class="res-item">
-            <img src="resources/terra/r1_charcoal.png">
-            <span id="count-charcoal">0</span>
-        </div>
-        <div class="res-item">
-            <img src="resources/terra/r1_water.png">
-            <span id="count-water">0</span>
-        </div>
+    <!-- Resource counts -->
+    <div id="res-bar">
+        <div><img src="resources/terra/r1_iron_ore.png"> <span id="iron">0</span></div>
+        <div><img src="resources/terra/r1_charcoal.png"> <span id="charcoal">0</span></div>
+        <div><img src="resources/terra/r1_water.png"> <span id="water">0</span></div>
     </div>
 
     <!-- Factories -->
-    <div id="factory-panel">
-        <h3>Factories</h3>
+    <div id="factories">
+        <h4>Factories</h4>
 
-        <button class="factory-btn" data-factory="extractor">
-            Build Extractor (50 Iron)
-        </button>
+        <button class="buy" data-f="extractor">Extractor (50 Iron)</button>
+        <button class="buy" data-f="smelter">Smelter (40 Charcoal)</button>
+        <button class="buy" data-f="pump">Pump (30 Water)</button>
 
-        <button class="factory-btn" data-factory="smelter">
-            Build Smelter (40 Charcoal)
-        </button>
-
-        <button class="factory-btn" data-factory="pump">
-            Build Pump (30 Water)
-        </button>
-
-        <div id="factory-list"></div>
+        <div id="fact-list"></div>
     </div>
 
-    <!-- Crafting Core -->
-    <div id="craft-panel">
-        <h3>Create P1 Core</h3>
-        <p>Cost: 50 Iron • 30 Charcoal • 40 Water</p>
+    <!-- Craft Core -->
+    <div id="craft">
+        <h4>P1 Core</h4>
+        <p>50 Iron • 30 Charcoal • 40 Water</p>
         <button id="craft-btn">Craft</button>
-
-        <div id="core-display">
-            <img src="resources/terra/p1_core.png">
-            <span id="count-core">0</span>
-        </div>
+        <div class="core-count"><img src="resources/terra/p1_core.png"><span id="core">0</span></div>
     </div>
 
 </div>
