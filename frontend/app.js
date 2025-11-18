@@ -1,86 +1,142 @@
-let res = {
+// ===== GAME STATE =====
+let state = {
+    coins: 0,
+    stars: 0,
+
     iron: 0,
     charcoal: 0,
     water: 0,
-    core: 0
+
+    factories: {
+        extractor: 0,
+        smelter: 0,
+        pump: 0
+    },
+
+    core: 0,
+
+    currentLocation: "career"
 };
 
-let fac = {
-    extractor: 0,
-    smelter: 0,
-    pump: 0
+// ===== UI ELEMENTS =====
+const el = {
+    coins: document.getElementById("coins"),
+    stars: document.getElementById("stars"),
+
+    iron: document.getElementById("iron"),
+    charcoal: document.getElementById("charcoal"),
+    water: document.getElementById("water"),
+
+    core: document.getElementById("core"),
+
+    locationBg: document.getElementById("location-bg"),
+    tapObject: document.getElementById("tap-object"),
+
+    factoryList: document.getElementById("factory-list"),
+
+    craftBtn: document.getElementById("craft-btn"),
 };
 
-const locImgs = {
-    career: "location/terra/terra_career.jpg",
-    forest: "location/terra/terra_forest.jpg",
-    lake: "location/terra/terra_lake.jpg",
+const LOCATIONS = {
+    "career": {
+        bg: "location/terra/terra_career.jpg",
+        resource: "resources/terra/r1_iron_ore.png",
+        yield: () => state.iron++
+    },
+    "forest": {
+        bg: "location/terra/terra_forest.jpg",
+        resource: "resources/terra/r1_charcoal.png",
+        yield: () => state.charcoal++
+    },
+    "lake": {
+        bg: "location/terra/terra_lake.jpg",
+        resource: "resources/terra/r1_water.png",
+        yield: () => state.water++
+    }
 };
 
-const resImgs = {
-    career: "resources/terra/r1_iron_ore.png",
-    forest: "resources/terra/r1_charcoal.png",
-    lake: "resources/terra/r1_water.png",
-};
+// ===== TAPPING =====
+el.tapObject.addEventListener("click", () => {
+    LOCATIONS[state.currentLocation].yield();
+    updateUI();
+});
 
-let current = "career";
+// ===== SWITCH LOCATION =====
+document.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
 
-document.querySelectorAll("#tabs button").forEach(b => {
-    b.addEventListener("click", () => {
-        current = b.dataset.loc;
-        document.getElementById("loc-img").src = locImgs[current];
-        document.getElementById("res-img").src = resImgs[current];
+        state.currentLocation = btn.dataset.loc;
+
+        const loc = LOCATIONS[state.currentLocation];
+        el.locationBg.src = loc.bg;
+        el.tapObject.src = loc.resource;
+
+        updateUI();
     });
 });
 
-document.getElementById("tap-zone").addEventListener("click", () => {
-    if (current === "career") res.iron++;
-    if (current === "forest") res.charcoal++;
-    if (current === "lake") res.water++;
-    update();
-});
-
+// ===== FACTORY PURCHASE =====
 document.querySelectorAll(".buy").forEach(btn => {
     btn.addEventListener("click", () => {
-        const f = btn.dataset.f;
-        if (f === "extractor" && res.iron >= 50) {
-            res.iron -= 50; fac.extractor++;
+        const type = btn.dataset.f;
+
+        if (type === "extractor" && state.iron >= 50) {
+            state.iron -= 50;
+            state.factories.extractor++;
         }
-        if (f === "smelter" && res.charcoal >= 40) {
-            res.charcoal -= 40; fac.smelter++;
+        if (type === "smelter" && state.charcoal >= 40) {
+            state.charcoal -= 40;
+            state.factories.smelter++;
         }
-        if (f === "pump" && res.water >= 30) {
-            res.water -= 30; fac.pump++;
+        if (type === "pump" && state.water >= 30) {
+            state.water -= 30;
+            state.factories.pump++;
         }
-        update();
+
+        updateUI();
     });
 });
 
-document.getElementById("craft-btn").addEventListener("click", () => {
-    if (res.iron >= 50 && res.charcoal >= 30 && res.water >= 40) {
-        res.iron -= 50;
-        res.charcoal -= 30;
-        res.water -= 40;
-        res.core++;
-    }
-    update();
-});
-
+// ===== FACTORY AUTO-INCOME =====
 setInterval(() => {
-    res.iron += fac.extractor;
-    res.charcoal += fac.smelter;
-    res.water += fac.pump;
-    update();
+    state.iron += state.factories.extractor * 1;
+    state.charcoal += state.factories.smelter * 1;
+    state.water += state.factories.pump * 1;
+
+    updateUI();
 }, 1000);
 
-function update() {
-    document.getElementById("iron").textContent = res.iron;
-    document.getElementById("charcoal").textContent = res.charcoal;
-    document.getElementById("water").textContent = res.water;
-    document.getElementById("core").textContent = res.core;
+// ===== CRAFT CORE =====
+el.craftBtn.addEventListener("click", () => {
+    if (state.iron >= 50 && state.charcoal >= 30 && state.water >= 40) {
+        state.iron -= 50;
+        state.charcoal -= 30;
+        state.water -= 40;
+        state.core++;
+        updateUI();
+    }
+});
 
-    document.getElementById("fact-list").innerHTML =
-        `Extractors: ${fac.extractor} • Smelters: ${fac.smelter} • Pumps: ${fac.pump}`;
+// ===== UPDATE UI =====
+function updateUI() {
+    el.coins.textContent = state.coins;
+    el.stars.textContent = state.stars;
+
+    el.iron.textContent = state.iron;
+    el.charcoal.textContent = state.charcoal;
+    el.water.textContent = state.water;
+
+    el.core.textContent = state.core;
+
+    let f = state.factories;
+
+    el.factoryList.innerHTML = `
+        Extractors: ${f.extractor}<br>
+        Smelters: ${f.smelter}<br>
+        Pumps: ${f.pump}
+    `;
 }
 
-update();
+updateUI();
