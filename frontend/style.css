@@ -1,103 +1,102 @@
 body {
     margin: 0;
-    background: #0a0a0f;
+    background: #0c0f1a;
+    font-family: sans-serif;
     color: white;
-    font-family: Arial, sans-serif;
-    user-select: none;
 }
 
-#game-container {
-    width: 100%;
-    max-width: 520px;
+#app {
+    max-width: 480px;
     margin: auto;
-    text-align: center;
 }
 
-#planet-header img {
+#planet-banner img {
     width: 100%;
-    border-bottom: 2px solid #2c2c44;
+    border-bottom: 2px solid #1c2333;
 }
 
-#location-tabs {
+#tabs {
     display: flex;
     justify-content: space-around;
-    margin: 10px 0;
+    margin: 8px 0;
 }
 
-.location-btn {
+#tabs button {
     flex: 1;
-    padding: 10px;
-    background: #1b1b27;
+    margin: 0 4px;
+    padding: 6px;
+    background: #1d2538;
+    border: 1px solid #2d3752;
     color: white;
-    border: none;
-    border-right: 1px solid #333;
-}
-
-.location-btn:last-child {
-    border-right: none;
-}
-
-#location-display img {
-    width: 100%;
     border-radius: 6px;
+    font-size: 12px;
 }
 
-#tap-area {
-    margin-top: 15px;
+#tap-zone {
+    position: relative;
+    width: 100%;
 }
 
-#tap-area img {
-    width: 180px;
-    animation: float 2s ease-in-out infinite;
+#tap-zone img {
+    width: 100%;
 }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-7px); }
-    100% { transform: translateY(0px); }
+.tap-target {
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    opacity: 0.9;
 }
 
-#tap-text {
-    margin-top: 4px;
-    font-size: 16px;
-    opacity: 0.7;
-}
-
-#resource-bar {
-    margin-top: 20px;
+#res-bar {
     display: flex;
     justify-content: space-around;
+    background: #1d2538;
+    padding: 6px;
+    border-radius: 6px;
+    margin: 8px;
 }
 
-.res-item {
-    text-align: center;
+#res-bar div {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.res-item img {
-    width: 40px;
+#res-bar img {
+    width: 22px;
 }
 
-#craft-panel {
-    margin-top: 25px;
-    background: #14141d;
-    padding: 15px;
-    border-radius: 8px;
-}
-
-#craft-btn {
-    width: 100%;
+#factories, #craft {
+    background: #141927;
+    margin: 8px;
     padding: 10px;
-    background: #4a32ff;
-    border: none;
-    color: white;
-    margin-top: 10px;
     border-radius: 6px;
 }
 
-#core-display {
-    margin-top: 15px;
+#factories h4, #craft h4 {
+    margin-top: 0;
 }
 
-#core-display img {
-    width: 70px;
+.buy {
+    width: 100%;
+    padding: 8px;
+    margin: 4px 0;
+    background: #262f46;
+    color: white;
+    border: 1px solid #3a4768;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.core-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.core-count img {
+    width: 32px;
 }
