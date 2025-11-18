@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    background: #0a0a0f;
+    color: white;
+    font-family: Arial, sans-serif;
+    user-select: none;
+}
+
+#game-container {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+    text-align: center;
+}
+
+#planet-header img {
+    width: 100%;
+    border-bottom: 2px solid #2c2c44;
+}
+
+#location-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+}
+
+.location-btn {
+    flex: 1;
+    padding: 10px;
+    background: #1b1b27;
+    color: white;
+    border: none;
+    border-right: 1px solid #333;
+}
+
+.location-btn:last-child {
+    border-right: none;
+}
+
+#location-display img {
+    width: 100%;
+    border-radius: 6px;
+}
+
+#tap-area {
+    margin-top: 15px;
+}
+
+#tap-area img {
+    width: 180px;
+    animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+    100% { transform: translateY(0px); }
+}
+
+#tap-text {
+    margin-top: 4px;
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+#resource-bar {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.res-item {
+    text-align: center;
+}
+
+.res-item img {
+    width: 40px;
+}
+
+#craft-panel {
+    margin-top: 25px;
+    background: #14141d;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+#craft-btn {
+    width: 100%;
+    padding: 10px;
+    background: #4a32ff;
+    border: none;
+    color: white;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+
+#core-display {
+    margin-top: 15px;
+}
+
+#core-display img {
+    width: 70px;
+}
