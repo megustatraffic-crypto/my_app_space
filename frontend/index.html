@@ -2,63 +2,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Terra</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="topbar">
-    <div class="currency">
-        <img src="currency/crystal_coin.jpg">
-        <span id="coins">0</span>
-    </div>
-    <div class="currency">
-        <img src="currency/currency_star.jpg">
-        <span id="stars">0</span>
-    </div>
-</div>
+<div id="game">
 
-<div class="planet-banner">
-    <img src="planets/terra/terra_banner.jpg">
-</div>
-
-<div class="tabs">
-    <button class="tab active" data-loc="career">Career</button>
-    <button class="tab" data-loc="forest">Forest</button>
-    <button class="tab" data-loc="lake">Lake</button>
-</div>
-
-<div class="game-area">
-
-    <div class="tap-wrapper">
-        <img id="location-bg" class="bg" src="location/terra/terra_career.jpg">
-        <img id="tap-object" class="tap-object" src="resources/terra/r1_iron_ore.png">
+    <!-- TOP BAR -->
+    <div id="top-bar">
+        <div class="currency">
+            <img src="ui/coin.png">
+            <span id="coins">0</span>
+        </div>
+        <div class="currency">
+            <img src="ui/star.png">
+            <span id="stars">0</span>
+        </div>
     </div>
 
-    <div class="resource-bar">
-        <div class="res-item"><img src="resources/terra/r1_iron_ore.png"><span id="iron">0</span></div>
-        <div class="res-item"><img src="resources/terra/r1_charcoal.png"><span id="charcoal">0</span></div>
-        <div class="res-item"><img src="resources/terra/r1_water.png"><span id="water">0</span></div>
+    <!-- MAIN AREA -->
+    <div id="play-area">
+        <img id="location-bg" src="location/terra/terra_career.jpg">
+
+        <img id="tap-object" src="resources/terra/r1_iron_ore.png">
     </div>
 
-    <div class="panel">
-        <h3>Factories</h3>
-        <button class="buy" data-f="extractor">Buy Extractor (50 iron)</button>
-        <button class="buy" data-f="smelter">Buy Smelter (40 charcoal)</button>
-        <button class="buy" data-f="pump">Buy Pump (30 water)</button>
-        <div id="factory-list" class="factory-list"></div>
+    <!-- LOCATION TABS -->
+    <div id="tabs">
+        <button class="tab active" data-loc="career">Карьер</button>
+        <button class="tab" data-loc="forest">Лес</button>
+        <button class="tab" data-loc="lake">Озеро</button>
     </div>
 
-    <div class="panel">
-        <h3>Craft Core</h3>
-        <p>Cost: 50 iron + 30 charcoal + 40 water</p>
-        <button id="craft-btn" class="craft-btn">Craft P1 Core</button>
-        <div class="core-item"><img src="resources/terra/p1_core.png"><span id="core">0</span></div>
+    <!-- RESOURCES -->
+    <div id="resources-panel">
+        <div>Iron: <span id="iron">0</span></div>
+        <div>Charcoal: <span id="charcoal">0</span></div>
+        <div>Water: <span id="water">0</span></div>
+        <div>CORE: <span id="core">0</span></div>
+    </div>
+
+    <!-- FACTORIES -->
+    <div id="factories">
+        <div id="factory-list"></div>
+
+        <button class="buy" data-f="extractor">Extractor — 50 Iron</button>
+        <button class="buy" data-f="smelter">Smelter — 40 Charcoal</button>
+        <button class="buy" data-f="pump">Pump — 30 Water</button>
+
+        <button id="craft-btn">CRAFT CORE</button>
     </div>
 
 </div>
 
 <script src="app.js"></script>
 </body>
-    </html>
+</html>
