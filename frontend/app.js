@@ -1,4 +1,5 @@
-// ===== GAME STATE =====
+// === INITIAL STATE ===
+
 let state = {
     coins: 0,
     stars: 0,
@@ -6,81 +7,94 @@ let state = {
     iron: 0,
     charcoal: 0,
     water: 0,
+    core: 0,
 
     factories: {
         extractor: 0,
         smelter: 0,
         pump: 0
-    },
-
-    core: 0,
-
-    currentLocation: "career"
-};
-
-// ===== UI ELEMENTS =====
-const el = {
-    coins: document.getElementById("coins"),
-    stars: document.getElementById("stars"),
-
-    iron: document.getElementById("iron"),
-    charcoal: document.getElementById("charcoal"),
-    water: document.getElementById("water"),
-
-    core: document.getElementById("core"),
-
-    locationBg: document.getElementById("location-bg"),
-    tapObject: document.getElementById("tap-object"),
-
-    factoryList: document.getElementById("factory-list"),
-
-    craftBtn: document.getElementById("craft-btn"),
-};
-
-const LOCATIONS = {
-    "career": {
-        bg: "location/terra/terra_career.jpg",
-        resource: "resources/terra/r1_iron_ore.png",
-        yield: () => state.iron++
-    },
-    "forest": {
-        bg: "location/terra/terra_forest.jpg",
-        resource: "resources/terra/r1_charcoal.png",
-        yield: () => state.charcoal++
-    },
-    "lake": {
-        bg: "location/terra/terra_lake.jpg",
-        resource: "resources/terra/r1_water.png",
-        yield: () => state.water++
     }
 };
 
-// ===== TAPPING =====
-el.tapObject.addEventListener("click", () => {
-    LOCATIONS[state.currentLocation].yield();
-    updateUI();
+// === ELEMENTS ===
+const tapObj = document.getElementById("tap-object");
+
+const ironEl = document.getElementById("iron");
+const charcoalEl = document.getElementById("charcoal");
+const waterEl = document.getElementById("water");
+const coreEl = document.getElementById("core");
+
+const coinEl = document.getElementById("coins");
+const starEl = document.getElementById("stars");
+
+const locationBg = document.getElementById("location-bg");
+
+const tabs = document.querySelectorAll(".tab");
+
+// === TAP LOGIC ===
+tapObj.addEventListener("click", () => {
+    let loc = currentLocation;
+
+    if (loc === "career") {
+        state.iron++;
+        ironEl.textContent = state.iron;
+        tapEffect();
+    }
+    if (loc === "forest") {
+        state.charcoal++;
+        charcoalEl.textContent = state.charcoal;
+        tapEffect();
+    }
+    if (loc === "lake") {
+        state.water++;
+        waterEl.textContent = state.water;
+        tapEffect();
+    }
 });
 
-// ===== SWITCH LOCATION =====
-document.querySelectorAll(".tab").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        btn.classList.add("active");
+// === TAP EFFECT (small pop animation) ===
+function tapEffect() {
+    tapObj.style.transform = "translateX(-50%) scale(0.9)";
+    setTimeout(() => {
+        tapObj.style.transform = "translateX(-50%) scale(1)";
+    }, 80);
+}
 
-        state.currentLocation = btn.dataset.loc;
+// === LOCATION SWITCH ===
+let currentLocation = "career";
 
-        const loc = LOCATIONS[state.currentLocation];
-        el.locationBg.src = loc.bg;
-        el.tapObject.src = loc.resource;
+const locImages = {
+    career: "location/terra/terra_career.jpg",
+    forest: "location/terra/terra_forest.jpg",
+    lake: "location/terra/terra_lake.jpg"
+};
 
-        updateUI();
+const tapTargets = {
+    career: "resources/terra/r1_iron_ore.png",
+    forest: "resources/terra/r1_charcoal.png",
+    lake: "resources/terra/r1_water.png"
+};
+
+tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        let loc = tab.dataset.loc;
+        currentLocation = loc;
+
+        locationBg.src = locImages[loc];
+        tapObj.src = tapTargets[loc];
     });
 });
 
-// ===== FACTORY PURCHASE =====
-document.querySelectorAll(".buy").forEach(btn => {
+// === FACTORY PURCHASE ===
+
+const buttons = document.querySelectorAll(".buy");
+
+buttons.forEach(btn => {
     btn.addEventListener("click", () => {
-        const type = btn.dataset.f;
+        let type = btn.dataset.f;
 
         if (type === "extractor" && state.iron >= 50) {
             state.iron -= 50;
@@ -99,44 +113,45 @@ document.querySelectorAll(".buy").forEach(btn => {
     });
 });
 
-// ===== FACTORY AUTO-INCOME =====
+// === AUTO PRODUCTION ===
 setInterval(() => {
+    // extractor → iron
     state.iron += state.factories.extractor * 1;
+
+    // smelter → charcoal
     state.charcoal += state.factories.smelter * 1;
+
+    // pump → water
     state.water += state.factories.pump * 1;
 
     updateUI();
 }, 1000);
 
-// ===== CRAFT CORE =====
-el.craftBtn.addEventListener("click", () => {
-    if (state.iron >= 50 && state.charcoal >= 30 && state.water >= 40) {
-        state.iron -= 50;
-        state.charcoal -= 30;
-        state.water -= 40;
+// === CRAFT CORE (P1) ===
+document.getElementById("craft-btn").addEventListener("click", () => {
+    if (
+        state.iron >= 100 &&
+        state.charcoal >= 100 &&
+        state.water >= 100
+    ) {
+        state.iron -= 100;
+        state.charcoal -= 100;
+        state.water -= 100;
+
         state.core++;
         updateUI();
     }
 });
 
-// ===== UPDATE UI =====
+// === UPDATE UI ===
 function updateUI() {
-    el.coins.textContent = state.coins;
-    el.stars.textContent = state.stars;
+    ironEl.textContent = state.iron;
+    charcoalEl.textContent = state.charcoal;
+    waterEl.textContent = state.water;
+    coreEl.textContent = state.core;
 
-    el.iron.textContent = state.iron;
-    el.charcoal.textContent = state.charcoal;
-    el.water.textContent = state.water;
-
-    el.core.textContent = state.core;
-
-    let f = state.factories;
-
-    el.factoryList.innerHTML = `
-        Extractors: ${f.extractor}<br>
-        Smelters: ${f.smelter}<br>
-        Pumps: ${f.pump}
-    `;
+    coinEl.textContent = state.coins;
+    starEl.textContent = state.stars;
 }
 
 updateUI();
