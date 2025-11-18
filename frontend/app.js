@@ -1,111 +1,86 @@
-let resources = {
+let res = {
     iron: 0,
     charcoal: 0,
     water: 0,
     core: 0
 };
 
-let factories = {
+let fac = {
     extractor: 0,
     smelter: 0,
     pump: 0
 };
 
-// === LOCATION SWITCH ===
-const locationImages = {
+const locImgs = {
     career: "location/terra/terra_career.jpg",
     forest: "location/terra/terra_forest.jpg",
-    lake: "location/terra/terra_lake.jpg"
+    lake: "location/terra/terra_lake.jpg",
 };
 
-const resourceImages = {
+const resImgs = {
     career: "resources/terra/r1_iron_ore.png",
     forest: "resources/terra/r1_charcoal.png",
-    lake: "resources/terra/r1_water.png"
+    lake: "resources/terra/r1_water.png",
 };
 
-let currentLoc = "career";
+let current = "career";
 
-document.querySelectorAll(".location-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const loc = btn.dataset.loc;
-        currentLoc = loc;
-
-        document.getElementById("location-img").src = locationImages[loc];
-        document.getElementById("resource-img").src = resourceImages[loc];
+document.querySelectorAll("#tabs button").forEach(b => {
+    b.addEventListener("click", () => {
+        current = b.dataset.loc;
+        document.getElementById("loc-img").src = locImgs[current];
+        document.getElementById("res-img").src = resImgs[current];
     });
 });
 
-// === TAP HANDLER ===
-document.getElementById("tap-area").addEventListener("click", () => {
-    if (currentLoc === "career") resources.iron += 1;
-    if (currentLoc === "forest") resources.charcoal += 1;
-    if (currentLoc === "lake") resources.water += 1;
-
-    updateUI();
+document.getElementById("tap-zone").addEventListener("click", () => {
+    if (current === "career") res.iron++;
+    if (current === "forest") res.charcoal++;
+    if (current === "lake") res.water++;
+    update();
 });
 
-// === FACTORY PURCHASE ===
-document.querySelectorAll(".factory-btn").forEach(btn => {
+document.querySelectorAll(".buy").forEach(btn => {
     btn.addEventListener("click", () => {
-        const type = btn.dataset.factory;
-
-        if (type === "extractor" && resources.iron >= 50) {
-            resources.iron -= 50;
-            factories.extractor++;
+        const f = btn.dataset.f;
+        if (f === "extractor" && res.iron >= 50) {
+            res.iron -= 50; fac.extractor++;
         }
-
-        if (type === "smelter" && resources.charcoal >= 40) {
-            resources.charcoal -= 40;
-            factories.smelter++;
+        if (f === "smelter" && res.charcoal >= 40) {
+            res.charcoal -= 40; fac.smelter++;
         }
-
-        if (type === "pump" && resources.water >= 30) {
-            resources.water -= 30;
-            factories.pump++;
+        if (f === "pump" && res.water >= 30) {
+            res.water -= 30; fac.pump++;
         }
-
-        updateUI();
+        update();
     });
 });
 
-// === FACTORY AUTOGENERATION ===
+document.getElementById("craft-btn").addEventListener("click", () => {
+    if (res.iron >= 50 && res.charcoal >= 30 && res.water >= 40) {
+        res.iron -= 50;
+        res.charcoal -= 30;
+        res.water -= 40;
+        res.core++;
+    }
+    update();
+});
+
 setInterval(() => {
-    resources.iron += factories.extractor;
-    resources.charcoal += factories.smelter;
-    resources.water += factories.pump;
-
-    updateUI();
+    res.iron += fac.extractor;
+    res.charcoal += fac.smelter;
+    res.water += fac.pump;
+    update();
 }, 1000);
 
-// === CRAFT CORE ===
-document.getElementById("craft-btn").addEventListener("click", () => {
-    if (
-        resources.iron >= 50 &&
-        resources.charcoal >= 30 &&
-        resources.water >= 40
-    ) {
-        resources.iron -= 50;
-        resources.charcoal -= 30;
-        resources.water -= 40;
-        resources.core += 1;
-    }
+function update() {
+    document.getElementById("iron").textContent = res.iron;
+    document.getElementById("charcoal").textContent = res.charcoal;
+    document.getElementById("water").textContent = res.water;
+    document.getElementById("core").textContent = res.core;
 
-    updateUI();
-});
-
-// === UPDATE UI ===
-function updateUI() {
-    document.getElementById("count-iron").innerText = resources.iron;
-    document.getElementById("count-charcoal").innerText = resources.charcoal;
-    document.getElementById("count-water").innerText = resources.water;
-    document.getElementById("count-core").innerText = resources.core;
-
-    document.getElementById("factory-list").innerHTML = `
-        <p>Extractors: ${factories.extractor}</p>
-        <p>Smelters: ${factories.smelter}</p>
-        <p>Pumps: ${factories.pump}</p>
-    `;
+    document.getElementById("fact-list").innerHTML =
+        `Extractors: ${fac.extractor} • Smelters: ${fac.smelter} • Pumps: ${fac.pump}`;
 }
 
-updateUI();
+update();
