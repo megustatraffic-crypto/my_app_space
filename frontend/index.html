@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Tapper</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="game-container">
+
+    <!-- Planet Banner -->
+    <div id="planet-header">
+        <img src="planets/terra/terra_banner.jpg" id="planet-banner">
+    </div>
+
+    <!-- Location selector -->
+    <div id="location-tabs">
+        <button class="location-btn" data-loc="career">Career</button>
+        <button class="location-btn" data-loc="forest">Forest</button>
+        <button class="location-btn" data-loc="lake">Lake</button>
+    </div>
+
+    <!-- Location image -->
+    <div id="location-display">
+        <img id="location-img" src="location/terra/terra_career.jpg">
+    </div>
+
+    <!-- Tap zone -->
+    <div id="tap-area">
+        <img id="resource-img" src="resources/terra/r1_iron_ore.png">
+        <div id="tap-text">Tap to mine!</div>
+    </div>
+
+    <!-- Resource counters -->
+    <div id="resource-bar">
+        <div class="res-item">
+            <img src="resources/terra/r1_iron_ore.png">
+            <span id="count-iron">0</span>
+        </div>
+        <div class="res-item">
+            <img src="resources/terra/r1_charcoal.png">
+            <span id="count-charcoal">0</span>
+        </div>
+        <div class="res-item">
+            <img src="resources/terra/r1_water.png">
+            <span id="count-water">0</span>
+        </div>
+    </div>
+
+    <!-- Crafting Core -->
+    <div id="craft-panel">
+        <h3>Create P1 Core</h3>
+        <p>Cost: 50 Iron • 30 Charcoal • 40 Water</p>
+        <button id="craft-btn">Craft</button>
+
+        <div id="core-display">
+            <img src="resources/terra/p1_core.png">
+            <span id="count-core">0</span>
+        </div>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
