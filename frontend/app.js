@@ -5,6 +5,12 @@ let resources = {
     core: 0
 };
 
+let factories = {
+    extractor: 0,
+    smelter: 0,
+    pump: 0
+};
+
 // === LOCATION SWITCH ===
 const locationImages = {
     career: "location/terra/terra_career.jpg",
@@ -39,6 +45,39 @@ document.getElementById("tap-area").addEventListener("click", () => {
     updateUI();
 });
 
+// === FACTORY PURCHASE ===
+document.querySelectorAll(".factory-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const type = btn.dataset.factory;
+
+        if (type === "extractor" && resources.iron >= 50) {
+            resources.iron -= 50;
+            factories.extractor++;
+        }
+
+        if (type === "smelter" && resources.charcoal >= 40) {
+            resources.charcoal -= 40;
+            factories.smelter++;
+        }
+
+        if (type === "pump" && resources.water >= 30) {
+            resources.water -= 30;
+            factories.pump++;
+        }
+
+        updateUI();
+    });
+});
+
+// === FACTORY AUTOGENERATION ===
+setInterval(() => {
+    resources.iron += factories.extractor;
+    resources.charcoal += factories.smelter;
+    resources.water += factories.pump;
+
+    updateUI();
+}, 1000);
+
 // === CRAFT CORE ===
 document.getElementById("craft-btn").addEventListener("click", () => {
     if (
@@ -55,12 +94,18 @@ document.getElementById("craft-btn").addEventListener("click", () => {
     updateUI();
 });
 
-// === UPDATE COUNTERS ===
+// === UPDATE UI ===
 function updateUI() {
     document.getElementById("count-iron").innerText = resources.iron;
     document.getElementById("count-charcoal").innerText = resources.charcoal;
     document.getElementById("count-water").innerText = resources.water;
     document.getElementById("count-core").innerText = resources.core;
+
+    document.getElementById("factory-list").innerHTML = `
+        <p>Extractors: ${factories.extractor}</p>
+        <p>Smelters: ${factories.smelter}</p>
+        <p>Pumps: ${factories.pump}</p>
+    `;
 }
 
 updateUI();
