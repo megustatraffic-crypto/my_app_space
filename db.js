@@ -10,15 +10,16 @@ const __dirname = path.dirname(__filename);
 
 const file = path.join(__dirname, 'db.json');
 
-// Создаём файл, если нет
 if (!fs.existsSync(file)) {
-    fs.writeFileSync(file, JSON.stringify({ users: [] }, null, 2));
+  fs.writeFileSync(file, JSON.stringify({
+    users: []
+  }, null, 2));
 }
 
 const adapter = new JSONFile(file);
-const db = new Low(adapter, { users: [] });
+const db = new Low(adapter);
 
 await db.read();
-if (!db.data) db.data = { users: [] };
+db.data ||= { users: [] };
 
 export default db;
