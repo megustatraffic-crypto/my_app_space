@@ -1,66 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <link rel="stylesheet" href="styles.css" />
-    <title>Galactic Grid</title>
+  <meta charset="utf-8" />
+  <title>Galactic Conglomerate — Terra</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
-<div id="app">
+  <div id="app">
+    <header><h1>Terra — Planet 1</h1></header>
+    <section id="resources">
+      <div><img src="resources/terra/r1_iron_ore.png" /><div id="r_iron">0</div></div>
+      <div><img src="resources/terra/r1_charcoal.png" /><div id="r_char">0</div></div>
+      <div><img src="resources/terra/r1_water.png" /><div id="r_water">0</div></div>
+      <div><img src="resources/terra/p1_core.png" /><div id="p1">0</div></div>
+    </section>
 
-    <div class="top-bar">
-        <div class="planet-info">
-            <img src="planets/terra/icon_planet_terra.png" class="planet-icon">
-            <span class="planet-name">TERRA</span>
-        </div>
+    <section id="locations">
+      <button data-resource="R1_1" class="tapbtn">Tap Iron</button>
+      <button data-resource="R1_2" class="tapbtn">Tap Charcoal</button>
+      <button data-resource="R1_3" class="tapbtn">Tap Water</button>
+    </section>
 
-        <div class="currency-box">
-            <img src="currency/crystal_coin.jpg" class="coin-icon">
-            <span id="coins">0</span>
-        </div>
-    </div>
+    <section id="modules">
+      <div>
+        <img src="factories/terra/module_extractor_r1.png" /><br/>
+        <button id="toggle_extractor">Start/Stop Extractor</button>
+        <button id="upgrade_extractor">Upgrade (cost C1)</button>
+      </div>
+      <div>
+        <img src="factories/terra/module_smelter_r1.png" /><br/>
+        <button id="toggle_smelter">Start/Stop Smelter</button>
+        <button id="upgrade_smelter">Upgrade (cost C1)</button>
+      </div>
+      <div>
+        <img src="factories/terra/module_pump_r1.png" /><br/>
+        <button id="toggle_pump">Start/Stop Pump</button>
+        <button id="upgrade_pump">Upgrade (cost C1)</button>
+      </div>
+    </section>
 
-    <div class="banner">
-        <img src="planets/terra/terra_banner.jpg" class="banner-img">
-    </div>
+    <section id="craft">
+      <button id="craft_p1">Craft P1 (recipe)</button>
+    </section>
 
-    <div class="location-tabs">
-        <button class="tab-btn active" data-loc="career">Карьер</button>
-        <button class="tab-btn" data-loc="forest">Лес</button>
-        <button class="tab-btn" data-loc="lake">Озеро</button>
-    </div>
+    <footer><small>Backend URL: <span id="backendUrl"></span></small></footer>
+  </div>
 
-    <div class="tap-area">
-        <img id="tap-object" src="resources/terra/r1_iron_ore.png" class="tap-img">
-        <div id="tap-pulse"></div>
-    </div>
-
-    <div class="resource-panel">
-        <div class="res">
-            <img src="resources/terra/r1_iron_ore.png">
-            <span id="r_iron">0</span>
-        </div>
-        <div class="res">
-            <img src="resources/terra/r1_charcoal.png">
-            <span id="r_charcoal">0</span>
-        </div>
-        <div class="res">
-            <img src="resources/terra/r1_water.png">
-            <span id="r_water">0</span>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <button class="nav-btn" id="btn-factory"></button>
-        <button class="nav-btn" id="btn-galaxy"></button>
-        <button class="nav-btn" id="btn-bank"></button>
-        <button class="nav-btn" id="btn-quests"></button>
-    </div>
-
-</div>
-
-<script src="app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
