@@ -1,157 +1,73 @@
-// === INITIAL STATE ===
+// app.js
+const BACKEND = (window.BACKEND_URL) ? window.BACKEND_URL : "https://your-backend.example.com"; 
+// replace with real URL or set global BACKEND_URL
 
-let state = {
-    coins: 0,
-    stars: 0,
+const TELEGRAM_ID = localStorage.getItem('tgId') || (Math.floor(Math.random()*900000)+100000).toString();
+localStorage.setItem('tgId', TELEGRAM_ID);
+document.getElementById('backendUrl').innerText = BACKEND;
 
-    iron: 0,
-    charcoal: 0,
-    water: 0,
-    core: 0,
-
-    factories: {
-        extractor: 0,
-        smelter: 0,
-        pump: 0
-    }
-};
-
-// === ELEMENTS ===
-const tapObj = document.getElementById("tap-object");
-
-const ironEl = document.getElementById("iron");
-const charcoalEl = document.getElementById("charcoal");
-const waterEl = document.getElementById("water");
-const coreEl = document.getElementById("core");
-
-const coinEl = document.getElementById("coins");
-const starEl = document.getElementById("stars");
-
-const locationBg = document.getElementById("location-bg");
-
-const tabs = document.querySelectorAll(".tab");
-
-// === TAP LOGIC ===
-tapObj.addEventListener("click", () => {
-    let loc = currentLocation;
-
-    if (loc === "career") {
-        state.iron++;
-        ironEl.textContent = state.iron;
-        tapEffect();
-    }
-    if (loc === "forest") {
-        state.charcoal++;
-        charcoalEl.textContent = state.charcoal;
-        tapEffect();
-    }
-    if (loc === "lake") {
-        state.water++;
-        waterEl.textContent = state.water;
-        tapEffect();
-    }
-});
-
-// === TAP EFFECT (small pop animation) ===
-function tapEffect() {
-    tapObj.style.transform = "translateX(-50%) scale(0.9)";
-    setTimeout(() => {
-        tapObj.style.transform = "translateX(-50%) scale(1)";
-    }, 80);
+async function api(path, body, method='POST') {
+  const res = await fetch(BACKEND + path, {
+    method,
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+  return res.json();
 }
 
-// === LOCATION SWITCH ===
-let currentLocation = "career";
-
-const locImages = {
-    career: "location/terra/terra_career.jpg",
-    forest: "location/terra/terra_forest.jpg",
-    lake: "location/terra/terra_lake.jpg"
-};
-
-const tapTargets = {
-    career: "resources/terra/r1_iron_ore.png",
-    forest: "resources/terra/r1_charcoal.png",
-    lake: "resources/terra/r1_water.png"
-};
-
-tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-
-        let loc = tab.dataset.loc;
-        currentLocation = loc;
-
-        locationBg.src = locImages[loc];
-        tapObj.src = tapTargets[loc];
-    });
-});
-
-// === FACTORY PURCHASE ===
-
-const buttons = document.querySelectorAll(".buy");
-
-buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        let type = btn.dataset.f;
-
-        if (type === "extractor" && state.iron >= 50) {
-            state.iron -= 50;
-            state.factories.extractor++;
-        }
-        if (type === "smelter" && state.charcoal >= 40) {
-            state.charcoal -= 40;
-            state.factories.smelter++;
-        }
-        if (type === "pump" && state.water >= 30) {
-            state.water -= 30;
-            state.factories.pump++;
-        }
-
-        updateUI();
-    });
-});
-
-// === AUTO PRODUCTION ===
-setInterval(() => {
-    // extractor → iron
-    state.iron += state.factories.extractor * 1;
-
-    // smelter → charcoal
-    state.charcoal += state.factories.smelter * 1;
-
-    // pump → water
-    state.water += state.factories.pump * 1;
-
-    updateUI();
-}, 1000);
-
-// === CRAFT CORE (P1) ===
-document.getElementById("craft-btn").addEventListener("click", () => {
-    if (
-        state.iron >= 100 &&
-        state.charcoal >= 100 &&
-        state.water >= 100
-    ) {
-        state.iron -= 100;
-        state.charcoal -= 100;
-        state.water -= 100;
-
-        state.core++;
-        updateUI();
-    }
-});
-
-// === UPDATE UI ===
-function updateUI() {
-    ironEl.textContent = state.iron;
-    charcoalEl.textContent = state.charcoal;
-    waterEl.textContent = state.water;
-    coreEl.textContent = state.core;
-
-    coinEl.textContent = state.coins;
-    starEl.textContent = state.stars;
+async function refresh() {
+  const r = await fetch(BACKEND + '/game/' + TELEGRAM_ID);
+  const j = await r.json();
+  if (!j.success) return console.error(j);
+  const u = j.user;
+  document.getElementById('r_iron').innerText = u.resources.R1_1;
+  document.getElementById('r_char').innerText = u.resources.R1_2;
+  document.getElementById('r_water').innerText = u.resources.R1_3;
+  document.getElementById('p1').innerText = u.resources.P1 || 0;
 }
 
-updateUI();
+document.querySelectorAll('.tapbtn').forEach(b=>{
+  b.onclick = async ()=> {
+    const resource = b.dataset.resource;
+    await api('/game/tap', { telegramId: TELEGRAM_ID, resource });
+    refresh();
+  };
+});
+
+document.getElementById('toggle_extractor').onclick = async ()=>{
+  await api('/game/module/toggle', { telegramId: TELEGRAM_ID, module: 'extractor' });
+  refresh();
+};
+document.getElementById('toggle_pump').onclick = async ()=>{
+  await api('/game/module/toggle', { telegramId: TELEGRAM_ID, module: 'pump' });
+  refresh();
+};
+document.getElementById('toggle_smelter').onclick = async ()=>{
+  await api('/game/module/toggle', { telegramId: TELEGRAM_ID, module: 'smelter' });
+  refresh();
+};
+
+document.getElementById('upgrade_extractor').onclick = async ()=>{
+  const res = await api('/game/module/upgrade', { telegramId: TELEGRAM_ID, module: 'extractor' });
+  if (res.error) alert(res.error + (res.need ? ' need:' + res.need : ''));
+  refresh();
+};
+document.getElementById('upgrade_pump').onclick = async ()=>{
+  const res = await api('/game/module/upgrade', { telegramId: TELEGRAM_ID, module: 'pump' });
+  if (res.error) alert(res.error + (res.need ? ' need:' + res.need : ''));
+  refresh();
+};
+document.getElementById('upgrade_smelter').onclick = async ()=>{
+  const res = await api('/game/module/upgrade', { telegramId: TELEGRAM_ID, module: 'smelter' });
+  if (res.error) alert(res.error + (res.need ? ' need:' + res.need : ''));
+  refresh();
+};
+
+document.getElementById('craft_p1').onclick = async ()=>{
+  const res = await api('/game/craft/p1', { telegramId: TELEGRAM_ID });
+  if (res.error) alert(res.error);
+  refresh();
+};
+
+setInterval(refresh, 3000);
+refresh();
