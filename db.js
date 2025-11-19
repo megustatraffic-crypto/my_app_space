@@ -1,25 +1,28 @@
-// db.js
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import { Low } from 'lowdb'
+import { JSONFile } from 'lowdb/node'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const file = path.join(__dirname, 'db.json');
+const dbFile = path.join(__dirname, 'database.json');
+const adapter = new JSONFile(dbFile);
 
-if (!fs.existsSync(file)) {
-  fs.writeFileSync(file, JSON.stringify({
-    users: []
-  }, null, 2));
-}
+// ОБЯЗАТЕЛЬНО: дефолтные данные
+const defaultData = {
+  users: {},
+  planets: {},
+  stats: {},
+};
 
-const adapter = new JSONFile(file);
-const db = new Low(adapter);
+const db = new Low(adapter, defaultData);
 
 await db.read();
-db.data ||= { users: [] };
+
+// Если файл пустой — заполнить дефолтными данными
+db.data ||= defaultData;
+
+await db.write();
 
 export default db;
