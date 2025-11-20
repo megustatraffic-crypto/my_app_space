@@ -1,17 +1,13 @@
-
-// routes/game.js
 import express from 'express';
 import User from '../models/User.js';
-import db from '../db.js';
 const router = express.Router();
-
 function now(){ return Date.now(); }
 
 // applyProduction: advances production from module.lastTick to now
 function applyProduction(user) {
   const cur = now();
 
-  // EXTRACTOR -> produces iron (R1_1) and small charcoal
+  // Extractor
   const ex = user.modules.extractor;
   if (!ex.lastTick) ex.lastTick = cur;
   if (ex.running) {
@@ -25,7 +21,7 @@ function applyProduction(user) {
     }
   } else ex.lastTick = cur;
 
-  // PUMP -> produces water (R1_3)
+  // Pump
   const pump = user.modules.pump;
   if (!pump.lastTick) pump.lastTick = cur;
   if (pump.running) {
@@ -38,7 +34,7 @@ function applyProduction(user) {
     }
   } else pump.lastTick = cur;
 
-  // SMELTER -> consumes iron + charcoal -> produces C1
+  // Smelter consumes iron + charcoal -> produces C1
   const sm = user.modules.smelter;
   if (!sm.lastTick) sm.lastTick = cur;
   if (sm.running) {
@@ -62,14 +58,12 @@ function applyProduction(user) {
     }
   } else sm.lastTick = cur;
 
-  // offlineBoost/vip modifiers are handled in claim offline; here we just advance production.
-
   user.updatedAt = cur;
   user.lastSeen = cur;
   return user;
 }
 
-// GET /game/:telegramId  -> returns user and applies production
+// GET /game/:telegramId
 router.get('/:telegramId', async (req,res) => {
   const tid = req.params.telegramId;
   if (!tid) return res.status(400).json({ error: 'missing id' });
@@ -79,35 +73,24 @@ router.get('/:telegramId', async (req,res) => {
   return res.json({ success: true, user });
 });
 
-// POST /game/tap  -> manual tap on resource: { telegramId, resource, gain }
+// POST /game/tap
 router.post('/tap', async (req,res) => {
   const { telegramId, resource, gain } = req.body;
   if (!telegramId || !resource) return res.status(400).json({ error: 'bad request' });
   const user = await User.ensure(telegramId, `u${telegramId}`);
   applyProduction(user);
-
   const bonus = Math.max(1, 1 + Math.floor(user.modules.extractor.level * 0.2));
   const actualGain = (typeof gain === 'number' ? gain : 1) * bonus;
-
-  // Map resource aliases to keys
-  const map = {
-    iron: 'R1_1',
-    charcoal: 'R1_2',
-    water: 'R1_3',
-    R1_1: 'R1_1',
-    R1_2: 'R1_2',
-    R1_3: 'R1_3'
-  };
+  const map = { iron: 'R1_1', charcoal: 'R1_2', water: 'R1_3', R1_1: 'R1_1', R1_2: 'R1_2', R1_3: 'R1_3' };
   const key = map[resource] || resource;
   if (!(key in user.resources)) return res.status(400).json({ error: 'bad resource' });
-
   user.resources[key] = (user.resources[key] || 0) + actualGain;
   user.updatedAt = now();
   await User.save(telegramId, user);
   return res.json({ success: true, resources: user.resources });
 });
 
-// POST /game/module/toggle -> { telegramId, module }
+// Toggle module
 router.post('/module/toggle', async (req,res) => {
   const { telegramId, module } = req.body;
   if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
@@ -120,23 +103,19 @@ router.post('/module/toggle', async (req,res) => {
   return res.json({ success: true, module: user.modules[module] });
 });
 
-// POST /game/module/upgrade -> { telegramId, module }
+// Upgrade module
 router.post('/module/upgrade', async (req,res) => {
   const { telegramId, module } = req.body;
   if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
   const user = await User.ensure(telegramId, `u${telegramId}`);
   applyProduction(user);
   if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
-  // cost formula: 300 * (level) for extractor, cheaper for others
   const lvl = user.modules[module].level;
   let cost = 300 * lvl;
   if (module === 'pump') cost = 200 * lvl;
   if (module === 'smelter') cost = 250 * lvl;
-
-  // use C1 as upgrade currency (or iron fallback)
   const availableC = user.resources.C1 || 0;
   if (availableC < cost) return res.status(400).json({ error: 'not enough components', need: cost });
-
   user.resources.C1 -= cost;
   user.modules[module].level += 1;
   user.updatedAt = now();
@@ -144,7 +123,7 @@ router.post('/module/upgrade', async (req,res) => {
   return res.json({ success: true, module: user.modules[module], resources: user.resources });
 });
 
-// POST /game/craft/p1 -> craft final product P1
+// Craft P1
 router.post('/craft/p1', async (req,res) => {
   const { telegramId } = req.body;
   if (!telegramId) return res.status(400).json({ error: 'bad request' });
