@@ -1,4 +1,3 @@
-// routes/game_extra.js
 import express from 'express';
 import db from '../db.js';
 const router = express.Router();
@@ -6,7 +5,6 @@ const router = express.Router();
 function now(){ return Date.now(); }
 function findUser(tid){ return db.data.users.find(u => u.telegramId === String(tid)); }
 
-// POST /game_extra/start_all { telegramId }
 router.post('/start_all', async (req,res) => {
   const { telegramId } = req.body;
   if (!telegramId) return res.status(400).json({ error: 'bad request' });
@@ -20,7 +18,6 @@ router.post('/start_all', async (req,res) => {
   return res.json({ success: true, modules: user.modules });
 });
 
-// POST /game_extra/claim_offline { telegramId }
 router.post('/claim_offline', async (req,res) => {
   const { telegramId } = req.body;
   if (!telegramId) return res.status(400).json({ error: 'bad request' });
@@ -29,7 +26,7 @@ router.post('/claim_offline', async (req,res) => {
 
   const lastSeen = user.lastSeen || now();
   const secs = Math.floor((now() - lastSeen) / 1000);
-  // approximate rates
+
   const ex = user.modules.extractor;
   const pump = user.modules.pump;
   const exRate = ex.baseRate * Math.pow(1.15, ex.level - 1);
@@ -38,14 +35,13 @@ router.post('/claim_offline', async (req,res) => {
   let gainedWater = Math.floor(pumpRate * secs);
   let gainedChar = Math.floor(gainedIron * 0.2);
 
-  // offline boost
   if (user.offlineBoostUntil && user.offlineBoostUntil > now()) {
     const mult = 3;
     gainedIron *= mult;
     gainedWater *= mult;
     gainedChar *= mult;
   }
-  // vip passive
+
   if (user.vip) {
     gainedIron += Math.floor(secs * 0.2);
   }
