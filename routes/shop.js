@@ -1,4 +1,3 @@
-// routes/shop.js
 import express from 'express';
 import db from '../db.js';
 const router = express.Router();
@@ -20,12 +19,9 @@ router.post('/buy', async (req,res) => {
   if (!user) return res.status(404).json({ error: 'user not found' });
   const it = items[item];
   if (!it) return res.status(400).json({ error: 'unknown item' });
-
   const balance = user.stars || 0;
   if (balance < it.price) return res.status(400).json({ error: 'not_enough_stars', need: it.price });
-
   user.stars = balance - it.price;
-
   if (it.type === 'offline_boost') {
     const base = Math.max(Date.now(), user.offlineBoostUntil || 0);
     user.offlineBoostUntil = base + it.hours * 3600 * 1000;
@@ -34,7 +30,6 @@ router.post('/buy', async (req,res) => {
   } else if (it.type === 'instant_pack') {
     for (const k in it.grant) user.resources[k] = (user.resources[k] || 0) + it.grant[k];
   }
-
   await db.write();
   return res.json({ success: true, user });
 });
