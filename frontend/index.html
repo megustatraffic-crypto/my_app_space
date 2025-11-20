@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Galactic Conglomerate — Terra</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Galactic Conglomerate — Terra</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app" class="app">
@@ -33,6 +33,11 @@
         </div>
 
         <div class="tap card">
+          <div class="resource-selector">
+            <button class="res-select" data-resource="R1_1" id="sel_R1_1">Iron</button>
+            <button class="res-select" data-resource="R1_2" id="sel_R1_2">Charcoal</button>
+            <button class="res-select" data-resource="R1_3" id="sel_R1_3">Water</button>
+          </div>
           <button id="tapBtn" class="big-tap">TAP TO MINE</button>
           <div class="tap-row">
             <div id="combo" class="combo">x1</div>
@@ -95,12 +100,15 @@
         <div class="logs card">
           <h3>Events</h3>
           <div id="logBox" class="logBox"></div>
+          <div style="margin-top:8px">
+            <button id="startAll" class="buy-btn">Start All Factories</button>
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="footer">
-      Backend: <span id="backendUrl">https://my-app-space.onrender.com</span> • <span id="status">idle</span>
+      Backend: <span id="backendUrl">__REPLACE_WITH_BACKEND__</span> • <span id="status">idle</span>
     </footer>
   </div>
 
