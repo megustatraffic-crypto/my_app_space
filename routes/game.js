@@ -1,31 +1,31 @@
+
 // routes/game.js
-import express from "express";
-import User from "../models/User.js";
+import express from 'express';
+import User from '../models/User.js';
+import db from '../db.js';
 const router = express.Router();
 
-function now() { return Date.now(); }
+function now(){ return Date.now(); }
 
-// apply production since lastTick for each running module
+// applyProduction: advances production from module.lastTick to now
 function applyProduction(user) {
   const cur = now();
 
-  // extractor -> produces R1_1 (iron) and R1_2 (charcoal) slightly
+  // EXTRACTOR -> produces iron (R1_1) and small charcoal
   const ex = user.modules.extractor;
   if (!ex.lastTick) ex.lastTick = cur;
   if (ex.running) {
-    const dt = (cur - ex.lastTick) / 1000; // seconds
-    const rate = ex.baseRate * Math.pow(1.15, ex.level - 1); // growth per level
+    const dt = (cur - ex.lastTick) / 1000;
+    const rate = ex.baseRate * Math.pow(1.15, ex.level - 1);
     const amount = Math.floor(rate * dt);
     if (amount > 0) {
-      user.resources.R1_1 += amount;
-      // small charcoal from extractor
-      user.resources.R1_2 += Math.floor(amount * 0.2);
+      user.resources.R1_1 = (user.resources.R1_1 || 0) + amount;
+      user.resources.R1_2 = (user.resources.R1_2 || 0) + Math.floor(amount * 0.2);
       ex.lastTick = cur;
     }
-  } else {
-    ex.lastTick = cur;
-  }
+  } else ex.lastTick = cur;
 
+  // PUMP -> produces water (R1_3)
   const pump = user.modules.pump;
   if (!pump.lastTick) pump.lastTick = cur;
   if (pump.running) {
@@ -33,110 +33,132 @@ function applyProduction(user) {
     const rate = pump.baseRate * Math.pow(1.12, pump.level - 1);
     const amount = Math.floor(rate * dt);
     if (amount > 0) {
-      user.resources.R1_3 += amount;
+      user.resources.R1_3 = (user.resources.R1_3 || 0) + amount;
       pump.lastTick = cur;
     }
   } else pump.lastTick = cur;
 
-  // smelter: consumes R1_1+R1_2 to produce C1 over time
+  // SMELTER -> consumes iron + charcoal -> produces C1
   const sm = user.modules.smelter;
   if (!sm.lastTick) sm.lastTick = cur;
   if (sm.running) {
     const dt = (cur - sm.lastTick) / 1000;
     const rate = sm.baseRate * Math.pow(1.1, sm.level - 1); // C/sec
     const amount = Math.floor(rate * dt);
-    // check if enough input resources exist, each C requires e.g. 5 iron + 2 charcoal
     const perC_iron = 5;
     const perC_char = 2;
     const maxPossible = Math.min(
-      Math.floor(user.resources.R1_1 / perC_iron),
-      Math.floor(user.resources.R1_2 / perC_char)
+      Math.floor((user.resources.R1_1 || 0) / perC_iron),
+      Math.floor((user.resources.R1_2 || 0) / perC_char)
     );
     const produce = Math.min(amount, maxPossible);
     if (produce > 0) {
       user.resources.R1_1 -= produce * perC_iron;
       user.resources.R1_2 -= produce * perC_char;
-      user.resources.C1 += produce;
+      user.resources.C1 = (user.resources.C1 || 0) + produce;
       sm.lastTick = cur;
     } else {
-      // nothing produced, still advance lastTick to avoid infinite loop
       sm.lastTick = cur;
     }
   } else sm.lastTick = cur;
 
+  // offlineBoost/vip modifiers are handled in claim offline; here we just advance production.
+
   user.updatedAt = cur;
+  user.lastSeen = cur;
   return user;
 }
 
-// get full state (applies production)
-router.get("/:telegramId", async (req, res) => {
+// GET /game/:telegramId  -> returns user and applies production
+router.get('/:telegramId', async (req,res) => {
   const tid = req.params.telegramId;
+  if (!tid) return res.status(400).json({ error: 'missing id' });
   const user = await User.ensure(tid, `u${tid}`);
   applyProduction(user);
   await User.save(tid, user);
-  res.json({ success: true, user });
+  return res.json({ success: true, user });
 });
 
-// tap: give one resource (manual tap on currently selected resource)
-router.post("/tap", async (req, res) => {
-  const { telegramId, resource } = req.body;
-  if (!telegramId || !resource) return res.json({ error: "bad request" });
+// POST /game/tap  -> manual tap on resource: { telegramId, resource, gain }
+router.post('/tap', async (req,res) => {
+  const { telegramId, resource, gain } = req.body;
+  if (!telegramId || !resource) return res.status(400).json({ error: 'bad request' });
   const user = await User.ensure(telegramId, `u${telegramId}`);
   applyProduction(user);
-  // manual tap gives small bonus, scale with extractor level
-  const bonus = 1 + Math.floor(user.modules.extractor.level * 0.5);
-  if (!(resource in user.resources)) return res.json({ error: "bad resource" });
-  user.resources[resource] += bonus;
+
+  const bonus = Math.max(1, 1 + Math.floor(user.modules.extractor.level * 0.2));
+  const actualGain = (typeof gain === 'number' ? gain : 1) * bonus;
+
+  // Map resource aliases to keys
+  const map = {
+    iron: 'R1_1',
+    charcoal: 'R1_2',
+    water: 'R1_3',
+    R1_1: 'R1_1',
+    R1_2: 'R1_2',
+    R1_3: 'R1_3'
+  };
+  const key = map[resource] || resource;
+  if (!(key in user.resources)) return res.status(400).json({ error: 'bad resource' });
+
+  user.resources[key] = (user.resources[key] || 0) + actualGain;
   user.updatedAt = now();
   await User.save(telegramId, user);
-  res.json({ success: true, resources: user.resources });
+  return res.json({ success: true, resources: user.resources });
 });
 
-// toggle module start/stop
-router.post("/module/toggle", async (req, res) => {
+// POST /game/module/toggle -> { telegramId, module }
+router.post('/module/toggle', async (req,res) => {
   const { telegramId, module } = req.body;
-  if (!telegramId || !module) return res.json({ error: "bad request" });
+  if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
   const user = await User.ensure(telegramId, `u${telegramId}`);
   applyProduction(user);
-  if (!user.modules[module]) return res.json({ error: "no such module" });
+  if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
   user.modules[module].running = !user.modules[module].running;
   user.modules[module].lastTick = now();
   await User.save(telegramId, user);
-  res.json({ success: true, module: user.modules[module] });
+  return res.json({ success: true, module: user.modules[module] });
 });
 
-// upgrade module (cost simple: C1 or resources)
-router.post("/module/upgrade", async (req, res) => {
+// POST /game/module/upgrade -> { telegramId, module }
+router.post('/module/upgrade', async (req,res) => {
   const { telegramId, module } = req.body;
-  if (!telegramId || !module) return res.json({ error: "bad request" });
+  if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
   const user = await User.ensure(telegramId, `u${telegramId}`);
   applyProduction(user);
-  // example cost: C1 * (level * 10)
-  const curLevel = user.modules[module].level;
-  const cost = (curLevel) * 10;
-  if ((user.resources.C1 || 0) < cost)
-    return res.json({ error: "not enough components", need: cost });
+  if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
+  // cost formula: 300 * (level) for extractor, cheaper for others
+  const lvl = user.modules[module].level;
+  let cost = 300 * lvl;
+  if (module === 'pump') cost = 200 * lvl;
+  if (module === 'smelter') cost = 250 * lvl;
+
+  // use C1 as upgrade currency (or iron fallback)
+  const availableC = user.resources.C1 || 0;
+  if (availableC < cost) return res.status(400).json({ error: 'not enough components', need: cost });
+
   user.resources.C1 -= cost;
   user.modules[module].level += 1;
   user.updatedAt = now();
   await User.save(telegramId, user);
-  res.json({ success: true, module: user.modules[module], resources: user.resources });
+  return res.json({ success: true, module: user.modules[module], resources: user.resources });
 });
 
-// craft final P1 from resources: require R1_1+R1_2+R1_3
-router.post("/craft/p1", async (req, res) => {
+// POST /game/craft/p1 -> craft final product P1
+router.post('/craft/p1', async (req,res) => {
   const { telegramId } = req.body;
+  if (!telegramId) return res.status(400).json({ error: 'bad request' });
   const user = await User.ensure(telegramId, `u${telegramId}`);
   applyProduction(user);
-  const need = { R1_1: 20, R1_2: 10, R1_3: 5 }; // example recipe
+  const need = { R1_1: 20, R1_2: 10, R1_3: 5 };
   for (const k of Object.keys(need)) {
-    if ((user.resources[k] || 0) < need[k]) return res.json({ error: "not enough resources", need });
+    if ((user.resources[k] || 0) < need[k]) return res.status(400).json({ error: 'not enough resources', need });
   }
   for (const k of Object.keys(need)) user.resources[k] -= need[k];
   user.resources.P1 = (user.resources.P1 || 0) + 1;
   user.updatedAt = now();
   await User.save(telegramId, user);
-  res.json({ success: true, resources: user.resources });
+  return res.json({ success: true, resources: user.resources });
 });
 
 export default router;
