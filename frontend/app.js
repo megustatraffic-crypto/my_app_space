@@ -1,12 +1,12 @@
-// app.js
-const BACKEND = "__REPLACE_WITH_BACKEND__"; // e.g. https://my-app-space.onrender.com
+// frontend/app.js (REPLACE existing)
+const BACKEND = "https://my-app-space.onrender.com"; // <- ТВОЙ URL
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const logBox = $('#logBox');
 
 function log(text){
-  if(!logBox) return;
+  if(!logBox) return console.log(text);
   const el = document.createElement('div');
   el.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
   logBox.prepend(el);
@@ -21,7 +21,7 @@ let selectedResource = 'R1_1';
 let lastTap = 0;
 const TAP_COOLDOWN = 120;
 
-// try Telegram WebApp init
+// Telegram init or demo id
 function tryTelegramInit(){
   try {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -31,7 +31,7 @@ function tryTelegramInit(){
       if (ui && ui.user && ui.user.id) {
         TELEGRAM_ID = String(ui.user.id);
         PLAYER_NAME = ui.user.username || ui.user.first_name || PLAYER_NAME;
-        log(`Telegram user ${PLAYER_NAME} (${TELEGRAM_ID})`);
+        log(`Telegram: ${PLAYER_NAME} (${TELEGRAM_ID})`);
         return true;
       }
     }
@@ -46,16 +46,27 @@ function initLocal(){
   log('Using demo id ' + TELEGRAM_ID);
 }
 if (!tryTelegramInit()) initLocal();
-$('#playerName').innerText = PLAYER_NAME;
-$('#backendUrl').innerText = BACKEND;
+if ($('#playerName')) $('#playerName').innerText = PLAYER_NAME;
+if ($('#backendUrl')) $('#backendUrl').innerText = BACKEND;
 
-// API helpers
+// Robust fetch helpers
 async function apiGET(path){
   try {
-    const r = await fetch(BACKEND + path);
-    return await r.json();
+    const r = await fetch(BACKEND + path, { credentials: 'omit' });
+    const text = await r.text();
+    if (!r.ok) {
+      log(`GET ${path} -> HTTP ${r.status}`);
+      // try to parse JSON error body
+      try { return { error: JSON.parse(text) }; } catch(e){ return { error: text || `HTTP ${r.status}` }; }
+    }
+    if (!text) return {};
+    try { return JSON.parse(text); } catch(e){
+      // not JSON (rare)
+      return { result: text };
+    }
   } catch(e){ log('GET error '+e.message); return { error: e.message }; }
 }
+
 async function apiPOST(path, body){
   try {
     const r = await fetch(BACKEND + path, {
@@ -63,36 +74,45 @@ async function apiPOST(path, body){
       headers:{ 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    return await r.json();
+    const text = await r.text();
+    if (!r.ok) {
+      log(`POST ${path} -> HTTP ${r.status}`);
+      try { return { error: JSON.parse(text) }; } catch(e){ return { error: text || `HTTP ${r.status}` }; }
+    }
+    if (!text) return {}; // empty body case
+    try { return JSON.parse(text); } catch(e){ return { result: text }; }
   } catch(e){ log('POST error '+e.message); return { error: e.message }; }
 }
 
 // refresh state
 async function refreshState(){
-  $('#status').innerText = 'syncing...';
+  if (!TELEGRAM_ID) return log('no TELEGRAM_ID set');
+  if ($('#status')) $('#status').innerText = 'syncing...';
   const res = await apiGET('/game/' + TELEGRAM_ID);
-  if (res.error) { log('load err ' + JSON.stringify(res)); $('#status').innerText='error'; return; }
-  const u = res.user;
+  if (res.error) { log('load err ' + JSON.stringify(res)); if ($('#status')) $('#status').innerText='error'; return; }
+  // Expect res.user
+  const u = res.user || res;
   lastState = u;
-  $('#R1_1').innerText = u.resources.R1_1 || 0;
-  $('#R1_2').innerText = u.resources.R1_2 || 0;
-  $('#R1_3').innerText = u.resources.R1_3 || 0;
-  $('#P1').innerText = u.resources.P1 || 0;
-  $('#lvl_extractor').innerText = u.modules.extractor.level;
-  $('#lvl_smelter').innerText = u.modules.smelter.level;
-  $('#lvl_pump').innerText = u.modules.pump.level;
+  if ($('#R1_1')) $('#R1_1').innerText = u.resources?.R1_1 ?? 0;
+  if ($('#R1_2')) $('#R1_2').innerText = u.resources?.R1_2 ?? 0;
+  if ($('#R1_3')) $('#R1_3').innerText = u.resources?.R1_3 ?? 0;
+  if ($('#P1')) $('#P1').innerText = u.resources?.P1 ?? 0;
+  if ($('#lvl_extractor')) $('#lvl_extractor').innerText = u.modules?.extractor?.level ?? 1;
+  if ($('#lvl_smelter')) $('#lvl_smelter').innerText = u.modules?.smelter?.level ?? 1;
+  if ($('#lvl_pump')) $('#lvl_pump').innerText = u.modules?.pump?.level ?? 1;
   updateModuleBars(u);
-  $('#status').innerText = 'ok';
+  if ($('#status')) $('#status').innerText='ok';
 }
 
-// module bars
+// update bars
 function updateModuleBars(u){
+  if (!u || !u.modules) return;
   const exRun = u.modules.extractor.running;
   const pumpRun = u.modules.pump.running;
   const smRun = u.modules.smelter.running;
-  $('#bar_extractor').style.width = exRun ? '60%' : '4%';
-  $('#bar_pump').style.width = pumpRun ? '50%' : '4%';
-  $('#bar_smelter').style.width = smRun ? '30%' : '4%';
+  if ($('#bar_extractor')) { $('#bar_extractor').style.width = exRun ? '60%' : '4%'; }
+  if ($('#bar_pump')) { $('#bar_pump').style.width = pumpRun ? '50%' : '4%'; }
+  if ($('#bar_smelter')) { $('#bar_smelter').style.width = smRun ? '30%' : '4%'; }
 }
 
 // selector
@@ -110,18 +130,34 @@ function setupSelector(){
   if (initial) initial.classList.add('active');
 }
 
-// tap
+// tap implementation
 async function doTap(){
   if (!lastState) await refreshState();
   const now = Date.now();
-  if (now - lastTap < TAP_COOLDOWN) return;
+  if (now - lastTap < TAP_COOLDOWN) {
+    // ignore too-fast taps
+    return;
+  }
   lastTap = now;
-  // combo
-  const bonus = 1; // can extend with combo logic
-  const res = await apiPOST('/game/tap', { telegramId: TELEGRAM_ID, resource: selectedResource, gain: 1 });
-  if (res.error) { log('Tap error: '+res.error); return; }
-  await refreshState();
+  // show immediate visual feedback
   showTapAnim();
+
+  const payload = { telegramId: TELEGRAM_ID, resource: selectedResource, gain: 1 };
+  const res = await apiPOST('/game/tap', payload);
+
+  if (res.error) {
+    log('Tap error: ' + JSON.stringify(res.error));
+    return;
+  }
+  // success — update UI from server response if provided, otherwise refresh
+  if (res.resources) {
+    // update quickly
+    if ($('#R1_1')) $('#R1_1').innerText = res.resources.R1_1 ?? (lastState?.resources?.R1_1 ?? 0);
+    if ($('#R1_2')) $('#R1_2').innerText = res.resources.R1_2 ?? (lastState?.resources?.R1_2 ?? 0);
+    if ($('#R1_3')) $('#R1_3').innerText = res.resources.R1_3 ?? (lastState?.resources?.R1_3 ?? 0);
+  } else {
+    await refreshState();
+  }
 }
 
 function showTapAnim(){
@@ -132,54 +168,60 @@ function showTapAnim(){
   setTimeout(()=> el.remove(), 700);
 }
 
-// binds
-$('#tapBtn').addEventListener('click', async ()=> await doTap());
+// bind UI safely
+function safeBind(){
+  const tapBtn = $('#tapBtn') || $('#tapBtn_alt') || document.querySelector('.big-tap');
+  if (!tapBtn) { log('tap button not found'); return; }
+  tapBtn.addEventListener('click', async (e)=>{ await doTap(); });
 
-$$('.toggle').forEach(b=>{
-  b.addEventListener('click', async (e)=>{
-    const module = e.currentTarget.dataset.module;
-    const res = await apiPOST('/game/module/toggle', { telegramId: TELEGRAM_ID, module });
-    if (res.error) log('Toggle err '+res.error); else { log(module+' toggled'); await refreshState(); }
+  $$('.toggle').forEach(b=>{
+    b.addEventListener('click', async (e)=>{
+      const module = e.currentTarget.dataset.module;
+      const res = await apiPOST('/game/module/toggle', { telegramId: TELEGRAM_ID, module });
+      if (res.error) log('Toggle err: '+JSON.stringify(res.error)); else { log(module+' toggled'); await refreshState(); }
+    });
   });
-});
-$$('.upgrade').forEach(b=>{
-  b.addEventListener('click', async (e)=>{
-    const module = e.currentTarget.dataset.module;
-    const res = await apiPOST('/game/module/upgrade', { telegramId: TELEGRAM_ID, module });
-    if (res.error){ alert('Upgrade failed: ' + (res.error || 'unknown')); log('upgrade fail '+JSON.stringify(res)); }
-    else { log('upgraded '+module); await refreshState(); }
+  $$('.upgrade').forEach(b=>{
+    b.addEventListener('click', async (e)=>{
+      const module = e.currentTarget.dataset.module;
+      const res = await apiPOST('/game/module/upgrade', { telegramId: TELEGRAM_ID, module });
+      if (res.error){ alert('Upgrade failed: ' + JSON.stringify(res.error)); log('upgrade fail '+JSON.stringify(res.error)); }
+      else { log('upgraded '+module); await refreshState(); }
+    });
   });
-});
 
-$('#craftP1').addEventListener('click', async ()=>{
-  const res = await apiPOST('/game/craft/p1', { telegramId: TELEGRAM_ID });
-  if (res.error){ $('#craftStatus').innerText = 'Failed: ' + (res.error); log('craft fail '+res.error); }
-  else { $('#craftStatus').innerText = 'Crafted!'; log('crafted P1'); await refreshState(); setTimeout(()=>$('#craftStatus').innerText='',2000); }
-});
-
-$('#startAll').addEventListener('click', async ()=>{
-  const res = await apiPOST('/game_extra/start_all', { telegramId: TELEGRAM_ID });
-  if (res.error) log('start all err: '+res.error); else { log('started all'); await refreshState(); }
-});
-
-$('#claimOffline').addEventListener('click', async ()=>{
-  const res = await apiPOST('/game_extra/claim_offline', { telegramId: TELEGRAM_ID });
-  if (res.error) log('claim err: '+JSON.stringify(res));
-  else { log('claimed offline: ' + JSON.stringify(res.gained)); await refreshState(); }
-});
-
-// shop modal
-$('#btnShop').addEventListener('click', ()=> $('#shopModal').classList.remove('hidden'));
-$('#closeShop').addEventListener('click', ()=> $('#shopModal').classList.add('hidden'));
-$$('.buy').forEach(b=>{
-  b.addEventListener('click', async (e)=>{
-    const item = e.currentTarget.dataset.buy;
-    const res = await apiPOST('/shop/buy', { telegramId: TELEGRAM_ID, item });
-    if (res.error) { alert('Buy failed: '+res.error); log('shop err '+JSON.stringify(res)); }
-    else { log('bought '+item); $('#shopModal').classList.add('hidden'); await refreshState(); }
+  if ($('#craftP1')) $('#craftP1').addEventListener('click', async ()=>{
+    const res = await apiPOST('/game/craft/p1', { telegramId: TELEGRAM_ID });
+    if (res.error){ $('#craftStatus').innerText = 'Failed: ' + (typeof res.error === 'string' ? res.error : JSON.stringify(res.error)); log('craft fail '+JSON.stringify(res.error)); }
+    else { $('#craftStatus').innerText = 'Crafted!'; log('crafted P1'); await refreshState(); setTimeout(()=>$('#craftStatus').innerText='',2000); }
   });
-});
 
+  if ($('#startAll')) $('#startAll').addEventListener('click', async ()=>{
+    const res = await apiPOST('/game_extra/start_all', { telegramId: TELEGRAM_ID });
+    if (res.error) log('start all err: '+JSON.stringify(res.error)); else { log('started all'); await refreshState(); }
+  });
+
+  if ($('#claimOffline')) $('#claimOffline').addEventListener('click', async ()=>{
+    const res = await apiPOST('/game_extra/claim_offline', { telegramId: TELEGRAM_ID });
+    if (res.error) log('claim err: '+JSON.stringify(res.error));
+    else { log('claimed offline: ' + JSON.stringify(res.gained)); await refreshState(); }
+  });
+
+  // shop
+  if ($('#btnShop')) $('#btnShop').addEventListener('click', ()=> $('#shopModal').classList.remove('hidden'));
+  if ($('#closeShop')) $('#closeShop').addEventListener('click', ()=> $('#shopModal').classList.add('hidden'));
+  $$('.buy').forEach(b=>{
+    b.addEventListener('click', async (e)=>{
+      const item = e.currentTarget.dataset.buy;
+      const res = await apiPOST('/shop/buy', { telegramId: TELEGRAM_ID, item });
+      if (res.error) { alert('Buy failed: '+JSON.stringify(res.error)); log('shop err '+JSON.stringify(res.error)); }
+      else { log('bought '+item); $('#shopModal').classList.add('hidden'); await refreshState(); }
+    });
+  });
+}
+
+setupSelector = setupSelector || function(){ /* no-op placeholder if not defined earlier */ };
 setupSelector();
+safeBind();
 setInterval(refreshState, 3000);
 refreshState();
