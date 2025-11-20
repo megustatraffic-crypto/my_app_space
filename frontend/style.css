@@ -11,8 +11,8 @@ html,body,#app{height:100%;margin:0;background:linear-gradient(180deg,#07070a 0%
 .left{flex:1;display:flex;flex-direction:column;gap:12px}
 .right{width:420px;display:flex;flex-direction:column;gap:12px}
 .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
-.planet-wrap{height:240px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00))}
-.planet{max-width:100%;height:auto;transform:scale(1.05)}
+.planet-wrap{height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00))}
+.planet{max-width:85%;height:auto;transform:translateY(4%) scale(0.9);filter:drop-shadow(0 8px 24px rgba(0,0,0,0.6))}
 .inventory h3, .factories h3, .craft h3{margin:0 0 8px 0;color:var(--muted);font-weight:600}
 .res-list{display:flex;flex-wrap:wrap;gap:10px}
 .res-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px}
@@ -20,6 +20,9 @@ html,body,#app{height:100%;margin:0;background:linear-gradient(180deg,#07070a 0%
 .meta{display:flex;flex-direction:column}
 .res-label{font-size:12px;color:var(--muted)}
 .res-value{font-weight:700;font-size:16px}
+.resource-selector{display:flex;gap:8px;margin-bottom:10px}
+.res-select{padding:8px 10px;border-radius:8px;border:0;background:rgba(255,255,255,0.02);color:var(--muted);cursor:pointer}
+.res-select.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#041018;font-weight:800}
 .big-tap{width:100%;padding:16px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:0;color:#041018;font-weight:800;font-size:18px;box-shadow:0 10px 24px rgba(52,209,214,0.12)}
 .tap-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
 .combo{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:8px;font-weight:700}
@@ -31,7 +34,7 @@ html,body,#app{height:100%;margin:0;background:linear-gradient(180deg,#07070a 0%
 .factory-controls{display:flex;flex-direction:column;gap:8px;flex:1}
 .name{font-weight:700;display:flex;justify-content:space-between}
 .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:8px;overflow:hidden}
-.bar{height:100%;width:0%;background:linear-gradient(90deg,#0ea5a4,#34d1d6)}
+.bar{height:100%;width:0%;background:linear-gradient(90deg,#0ea5a4,#34d1d6);transition:width 0.4s}
 .f-buttons{display:flex;gap:8px;margin-top:6px}
 .f-buttons button{padding:8px;border-radius:8px;border:0;background:#111827;color:#dbeafe;cursor:pointer}
 .toggle{background:#0ea5a4}
