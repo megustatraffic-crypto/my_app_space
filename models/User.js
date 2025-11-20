@@ -1,52 +1,47 @@
-// models/User.js
 import db from '../db.js';
-
-function now() { return Date.now(); }
+function now(){ return Date.now(); }
 
 const defaultUser = (telegramId, name) => ({
-  telegramId,
-  name,
-  resources: {
-    R1_1: 0, // iron ore
-    R1_2: 0, // charcoal
-    R1_3: 0, // water
-    C1: 0,
-    P1: 0
-  },
+  telegramId: String(telegramId),
+  name: name || `u${telegramId}`,
+  resources: { R1_1: 0, R1_2: 0, R1_3: 0, C1: 0, P1: 0 },
   modules: {
-    extractor: { level: 1, running: false, lastTick: now(), baseRate: 1 }, // R/sec
-    smelter:   { level: 1, running: false, lastTick: now(), baseRate: 0.25 }, // converts R->C
-    pump:      { level: 1, running: false, lastTick: now(), baseRate: 0.5 } // R/sec (water)
+    extractor: { level: 1, running: false, lastTick: now(), baseRate: 1 },
+    smelter: { level: 1, running: false, lastTick: now(), baseRate: 0.25 },
+    pump: { level: 1, running: false, lastTick: now(), baseRate: 0.5 }
   },
   upgrades: {},
+  stars: 0,
+  vip: false,
+  offlineBoostUntil: 0,
+  lastSeen: now(),
   createdAt: now(),
   updatedAt: now()
 });
 
 export default class User {
-  static findByTelegram(id) {
-    return db.data.users.find(u => u.telegramId === id);
+  static findByTelegram(id){
+    return db.data.users.find(u => u.telegramId === String(id));
   }
 
-  static async create(data) {
+  static async create(data){
     db.data.users.push(data);
     await db.write();
     return data;
   }
 
-  static async save(id, newData) {
-    const idx = db.data.users.findIndex(u => u.telegramId === id);
+  static async save(id, newData){
+    const idx = db.data.users.findIndex(u => u.telegramId === String(id));
     if (idx === -1) return null;
     db.data.users[idx] = newData;
     await db.write();
     return db.data.users[idx];
   }
 
-  // helper: ensure user exists
-  static async ensure(telegramId, name) {
+  static async ensure(telegramId, name){
     let user = User.findByTelegram(telegramId);
     if (!user) {
-      user = defaultUser(telegramId, name || ('u' + telegramId));
+      user = defaultUser(telegramId, name);
       await User.create(user);
     }
     return user;
