@@ -1,13 +1,16 @@
+// routes/game.js
 import express from 'express';
 import User from '../models/User.js';
+import db from '../db.js';
 const router = express.Router();
+
 function now(){ return Date.now(); }
 
-// applyProduction: advances production from module.lastTick to now
+// advance production for a user (tick)
 function applyProduction(user) {
   const cur = now();
 
-  // Extractor
+  // EXTRACTOR -> iron & small charcoal
   const ex = user.modules.extractor;
   if (!ex.lastTick) ex.lastTick = cur;
   if (ex.running) {
@@ -21,7 +24,7 @@ function applyProduction(user) {
     }
   } else ex.lastTick = cur;
 
-  // Pump
+  // PUMP -> water
   const pump = user.modules.pump;
   if (!pump.lastTick) pump.lastTick = cur;
   if (pump.running) {
@@ -34,7 +37,7 @@ function applyProduction(user) {
     }
   } else pump.lastTick = cur;
 
-  // Smelter consumes iron + charcoal -> produces C1
+  // SMELTER -> consumes iron + charcoal -> produces C1
   const sm = user.modules.smelter;
   if (!sm.lastTick) sm.lastTick = cur;
   if (sm.running) {
@@ -63,81 +66,119 @@ function applyProduction(user) {
   return user;
 }
 
-// GET /game/:telegramId
+// GET user by id, apply production
 router.get('/:telegramId', async (req,res) => {
-  const tid = req.params.telegramId;
-  if (!tid) return res.status(400).json({ error: 'missing id' });
-  const user = await User.ensure(tid, `u${tid}`);
-  applyProduction(user);
-  await User.save(tid, user);
-  return res.json({ success: true, user });
+  try {
+    const tid = req.params.telegramId;
+    if (!tid) return res.status(400).json({ error: 'missing id' });
+    const user = await User.ensure(tid, `u${tid}`);
+    applyProduction(user);
+    await User.save(tid, user);
+    return res.json({ success: true, user });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
+  }
 });
 
 // POST /game/tap
 router.post('/tap', async (req,res) => {
-  const { telegramId, resource, gain } = req.body;
-  if (!telegramId || !resource) return res.status(400).json({ error: 'bad request' });
-  const user = await User.ensure(telegramId, `u${telegramId}`);
-  applyProduction(user);
-  const bonus = Math.max(1, 1 + Math.floor(user.modules.extractor.level * 0.2));
-  const actualGain = (typeof gain === 'number' ? gain : 1) * bonus;
-  const map = { iron: 'R1_1', charcoal: 'R1_2', water: 'R1_3', R1_1: 'R1_1', R1_2: 'R1_2', R1_3: 'R1_3' };
-  const key = map[resource] || resource;
-  if (!(key in user.resources)) return res.status(400).json({ error: 'bad resource' });
-  user.resources[key] = (user.resources[key] || 0) + actualGain;
-  user.updatedAt = now();
-  await User.save(telegramId, user);
-  return res.json({ success: true, resources: user.resources });
-});
+  try {
+    const { telegramId, resource, gain } = req.body;
+    if (!telegramId || !resource) return res.status(400).json({ error: 'bad request' });
+    const user = await User.ensure(telegramId, `u${telegramId}`);
+    applyProduction(user);
 
-// Toggle module
-router.post('/module/toggle', async (req,res) => {
-  const { telegramId, module } = req.body;
-  if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
-  const user = await User.ensure(telegramId, `u${telegramId}`);
-  applyProduction(user);
-  if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
-  user.modules[module].running = !user.modules[module].running;
-  user.modules[module].lastTick = now();
-  await User.save(telegramId, user);
-  return res.json({ success: true, module: user.modules[module] });
-});
+    const bonus = Math.max(1, 1 + Math.floor(user.modules.extractor.level * 0.2));
+    const actualGain = (typeof gain === 'number' ? gain : 1) * bonus;
 
-// Upgrade module
-router.post('/module/upgrade', async (req,res) => {
-  const { telegramId, module } = req.body;
-  if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
-  const user = await User.ensure(telegramId, `u${telegramId}`);
-  applyProduction(user);
-  if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
-  const lvl = user.modules[module].level;
-  let cost = 300 * lvl;
-  if (module === 'pump') cost = 200 * lvl;
-  if (module === 'smelter') cost = 250 * lvl;
-  const availableC = user.resources.C1 || 0;
-  if (availableC < cost) return res.status(400).json({ error: 'not enough components', need: cost });
-  user.resources.C1 -= cost;
-  user.modules[module].level += 1;
-  user.updatedAt = now();
-  await User.save(telegramId, user);
-  return res.json({ success: true, module: user.modules[module], resources: user.resources });
-});
+    const map = {
+      iron: 'R1_1',
+      charcoal: 'R1_2',
+      water: 'R1_3',
+      R1_1: 'R1_1',
+      R1_2: 'R1_2',
+      R1_3: 'R1_3'
+    };
+    const key = map[resource] || resource;
+    if (!(key in user.resources)) return res.status(400).json({ error: 'bad resource' });
 
-// Craft P1
-router.post('/craft/p1', async (req,res) => {
-  const { telegramId } = req.body;
-  if (!telegramId) return res.status(400).json({ error: 'bad request' });
-  const user = await User.ensure(telegramId, `u${telegramId}`);
-  applyProduction(user);
-  const need = { R1_1: 20, R1_2: 10, R1_3: 5 };
-  for (const k of Object.keys(need)) {
-    if ((user.resources[k] || 0) < need[k]) return res.status(400).json({ error: 'not enough resources', need });
+    user.resources[key] = (user.resources[key] || 0) + actualGain;
+    user.updatedAt = now();
+    await User.save(telegramId, user);
+
+    return res.json({ success: true, resources: user.resources });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
   }
-  for (const k of Object.keys(need)) user.resources[k] -= need[k];
-  user.resources.P1 = (user.resources.P1 || 0) + 1;
-  user.updatedAt = now();
-  await User.save(telegramId, user);
-  return res.json({ success: true, resources: user.resources });
+});
+
+// module toggle
+router.post('/module/toggle', async (req,res) => {
+  try {
+    const { telegramId, module } = req.body;
+    if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
+    const user = await User.ensure(telegramId, `u${telegramId}`);
+    applyProduction(user);
+    if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
+    user.modules[module].running = !user.modules[module].running;
+    user.modules[module].lastTick = now();
+    await User.save(telegramId, user);
+    return res.json({ success: true, module: user.modules[module] });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
+  }
+});
+
+// module upgrade
+router.post('/module/upgrade', async (req,res) => {
+  try {
+    const { telegramId, module } = req.body;
+    if (!telegramId || !module) return res.status(400).json({ error: 'bad request' });
+    const user = await User.ensure(telegramId, `u${telegramId}`);
+    applyProduction(user);
+    if (!user.modules[module]) return res.status(400).json({ error: 'no such module' });
+    const lvl = user.modules[module].level;
+    let cost = 300 * lvl;
+    if (module === 'pump') cost = 200 * lvl;
+    if (module === 'smelter') cost = 250 * lvl;
+
+    const availableC = user.resources.C1 || 0;
+    if (availableC < cost) return res.status(400).json({ error: 'not enough components', need: cost });
+
+    user.resources.C1 -= cost;
+    user.modules[module].level += 1;
+    user.updatedAt = now();
+    await User.save(telegramId, user);
+    return res.json({ success: true, module: user.modules[module], resources: user.resources });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
+  }
+});
+
+// craft P1
+router.post('/craft/p1', async (req,res) => {
+  try {
+    const { telegramId } = req.body;
+    if (!telegramId) return res.status(400).json({ error: 'bad request' });
+    const user = await User.ensure(telegramId, `u${telegramId}`);
+    applyProduction(user);
+    const need = { R1_1: 20, R1_2: 10, R1_3: 5 };
+    for (const k of Object.keys(need)) {
+      if ((user.resources[k] || 0) < need[k]) return res.status(400).json({ error: 'not enough resources', need });
+    }
+    for (const k of Object.keys(need)) user.resources[k] -= need[k];
+    user.resources.P1 = (user.resources.P1 || 0) + 1;
+    user.updatedAt = now();
+    await User.save(telegramId, user);
+    return res.json({ success: true, resources: user.resources });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
+  }
 });
 
 export default router;
