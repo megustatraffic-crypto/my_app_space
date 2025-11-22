@@ -1,3 +1,4 @@
+// routes/shop.js
 import express from 'express';
 import db from '../db.js';
 const router = express.Router();
@@ -13,25 +14,34 @@ function getUser(tid){
 }
 
 router.post('/buy', async (req,res) => {
-  const { telegramId, item } = req.body;
-  if (!telegramId || !item) return res.status(400).json({ error: 'bad request' });
-  const user = getUser(telegramId);
-  if (!user) return res.status(404).json({ error: 'user not found' });
-  const it = items[item];
-  if (!it) return res.status(400).json({ error: 'unknown item' });
-  const balance = user.stars || 0;
-  if (balance < it.price) return res.status(400).json({ error: 'not_enough_stars', need: it.price });
-  user.stars = balance - it.price;
-  if (it.type === 'offline_boost') {
-    const base = Math.max(Date.now(), user.offlineBoostUntil || 0);
-    user.offlineBoostUntil = base + it.hours * 3600 * 1000;
-  } else if (it.type === 'vip_permanent') {
-    user.vip = true;
-  } else if (it.type === 'instant_pack') {
-    for (const k in it.grant) user.resources[k] = (user.resources[k] || 0) + it.grant[k];
+  try {
+    const { telegramId, item } = req.body;
+    if (!telegramId || !item) return res.status(400).json({ error: 'bad request' });
+    const user = getUser(telegramId);
+    if (!user) return res.status(404).json({ error: 'user not found' });
+    const it = items[item];
+    if (!it) return res.status(400).json({ error: 'unknown item' });
+
+    const balance = user.stars || 0;
+    if (balance < it.price) return res.status(400).json({ error: 'not_enough_stars', need: it.price });
+
+    user.stars = balance - it.price;
+
+    if (it.type === 'offline_boost') {
+      const base = Math.max(Date.now(), user.offlineBoostUntil || 0);
+      user.offlineBoostUntil = base + it.hours * 3600 * 1000;
+    } else if (it.type === 'vip_permanent') {
+      user.vip = true;
+    } else if (it.type === 'instant_pack') {
+      for (const k in it.grant) user.resources[k] = (user.resources[k] || 0) + it.grant[k];
+    }
+
+    await db.write();
+    return res.json({ success: true, user });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
   }
-  await db.write();
-  return res.json({ success: true, user });
 });
 
 export default router;
