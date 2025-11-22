@@ -1,33 +1,137 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Terra — Cosmic Farm</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Galactic Conglomerate — Terra</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app">
-    <header><div class="title">Terra — Planet 1</div><div id="playerName">—</div></header>
-    <main>
-      <div class="planet-wrap"><img id="planetImg" src="assets/terra_planet.png" /></div>
-      <div class="inventory">
-        <div>Iron: <span id="R1_1">0</span></div>
-        <div>Charcoal: <span id="R1_2">0</span></div>
-        <div>Water: <span id="R1_3">0</span></div>
-        <div>P1: <span id="P1">0</span></div>
+  <div id="app" class="app">
+    <header class="topbar">
+      <div class="title">Terra — Planet 1</div>
+      <div class="righthead">
+        <div id="playerName" class="player">—</div>
+        <button id="btnShop" class="iconbtn">АМ</button>
       </div>
-      <div class="selector">
-        <button class="res-select" data-resource="R1_1" id="sel_R1_1">Iron</button>
-        <button class="res-select" data-resource="R1_2" id="sel_R1_2">Charcoal</button>
-        <button class="res-select" data-resource="R1_3" id="sel_R1_3">Water</button>
-      </div>
-      <button id="tapBtn">TAP TO MINE</button>
-      <div><button id="startAll">Start All</button> <button id="claimOffline">Claim Offline</button></div>
-      <div><button id="craftP1">Craft P1</button> <span id="craftStatus"></span></div>
-      <div id="logBox" class="logBox"></div>
+    </header>
+
+    <main class="main">
+      <section class="left">
+        <div class="planet-wrap card">
+          <img id="planetImg" src="assets/terra_planet.png" alt="planet" class="planet"/>
+        </div>
+
+        <div class="inventory card">
+          <h3>Inventory</h3>
+          <div class="res-list">
+            <div class="res-item"><img src="assets/r1_iron_one.png"><div class="meta"><div class="res-label">Iron</div><div id="R1_1" class="res-value">0</div></div></div>
+            <div class="res-item"><img src="assets/r1_charcoal.png"><div class="meta"><div class="res-label">Charcoal</div><div id="R1_2" class="res-value">0</div></div></div>
+            <div class="res-item"><img src="assets/r1_water.png"><div class="meta"><div class="res-label">Water</div><div id="R1_3" class="res-value">0</div></div></div>
+            <div class="res-item"><img src="assets/p1_core.png"><div class="meta"><div class="res-label">P1</div><div id="P1" class="res-value">0</div></div></div>
+          </div>
+        </div>
+
+        <div class="tap card">
+          <div class="resource-selector">
+            <button class="res-select" data-resource="R1_1" id="sel_R1_1">Iron</button>
+            <button class="res-select" data-resource="R1_2" id="sel_R1_2">Charcoal</button>
+            <button class="res-select" data-resource="R1_3" id="sel_R1_3">Water</button>
+          </div>
+          <button id="tapBtn" class="big-tap">TAP TO MINE</button>
+          <div class="tap-row">
+            <div id="combo" class="combo">x1</div>
+            <div id="offlineBox" class="offline">Offline: <span id="offlineAmount">0</span> <button id="claimOffline">Claim</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="right">
+        <div class="factories card">
+          <h3>Factories</h3>
+          <div class="factory-grid">
+            <div class="factory" data-module="extractor">
+              <img src="assets/module_extractor_r1.png" />
+              <div class="factory-controls">
+                <div class="name">Extractor <span class="lvl">lv <span id="lvl_extractor">1</span></span></div>
+                <div class="progress"><div id="bar_extractor" class="bar"></div></div>
+                <div class="f-buttons">
+                  <button data-module="extractor" class="toggle">Start/Stop</button>
+                  <button data-module="extractor" class="upgrade">Upgrade</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="factory" data-module="smelter">
+              <img src="assets/module_smelter_r1.png" />
+              <div class="factory-controls">
+                <div class="name">Smelter <span class="lvl">lv <span id="lvl_smelter">1</span></span></div>
+                <div class="progress"><div id="bar_smelter" class="bar"></div></div>
+                <div class="f-buttons">
+                  <button data-module="smelter" class="toggle">Start/Stop</button>
+                  <button data-module="smelter" class="upgrade">Upgrade</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="factory" data-module="pump">
+              <img src="assets/module_pump_r1.png" />
+              <div class="factory-controls">
+                <div class="name">Pump <span class="lvl">lv <span id="lvl_pump">1</span></span></div>
+                <div class="progress"><div id="bar_pump" class="bar"></div></div>
+                <div class="f-buttons">
+                  <button data-module="pump" class="toggle">Start/Stop</button>
+                  <button data-module="pump" class="upgrade">Upgrade</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="craft card">
+          <h3>Craft</h3>
+          <div class="craft-info">Recipe: Iron ×20, Charcoal ×10, Water ×5</div>
+          <div class="craft-row">
+            <button id="craftP1" class="cta">Craft P1</button>
+            <div id="craftStatus" class="craftStatus"></div>
+          </div>
+        </div>
+
+        <div class="logs card">
+          <h3>Events</h3>
+          <div id="logBox" class="logBox"></div>
+          <div style="margin-top:8px">
+            <button id="startAll" class="buy-btn">Start All Factories</button>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <footer class="footer">
+      Backend: <span id="backendUrl">https://my-app-space.onrender.com</span> • <span id="status">idle</span>
+    </footer>
   </div>
-<script src="app.js"></script>
+
+  <!-- shop modal -->
+  <div id="shopModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Shop — Antimatter</h3>
+      <div class="shop-grid">
+        <div class="shop-item">
+          <div class="tag">100 АМ</div>
+          <div class="desc">Скачок: мгновенно даёт 8 часов оффлайн-дохода</div>
+          <button data-buy="burst_100" class="buy">Buy</button>
+        </div>
+        <div class="shop-item">
+          <div class="tag">500 АМ</div>
+          <div class="desc">VIP: вечный генератор (пассив без сырья)</div>
+          <button data-buy="vip_500" class="buy">Buy</button>
+        </div>
+      </div>
+      <button id="closeShop" class="close">Close</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
