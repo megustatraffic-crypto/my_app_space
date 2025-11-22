@@ -1,5 +1,5 @@
-// frontend/app.js (REPLACE existing)
-const BACKEND = "https://my-app-space.onrender.com"; // <- ТВОЙ URL
+// frontend/app.js
+const BACKEND = "https://my-app-space.onrender.com";
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -13,7 +13,6 @@ function log(text){
   while(logBox.childElementCount>200) logBox.removeChild(logBox.lastChild);
 }
 
-// user init
 let TELEGRAM_ID = null;
 let PLAYER_NAME = "Player";
 let lastState = null;
@@ -21,7 +20,6 @@ let selectedResource = 'R1_1';
 let lastTap = 0;
 const TAP_COOLDOWN = 120;
 
-// Telegram init or demo id
 function tryTelegramInit(){
   try {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -49,19 +47,16 @@ if (!tryTelegramInit()) initLocal();
 if ($('#playerName')) $('#playerName').innerText = PLAYER_NAME;
 if ($('#backendUrl')) $('#backendUrl').innerText = BACKEND;
 
-// Robust fetch helpers
 async function apiGET(path){
   try {
     const r = await fetch(BACKEND + path, { credentials: 'omit' });
     const text = await r.text();
     if (!r.ok) {
       log(`GET ${path} -> HTTP ${r.status}`);
-      // try to parse JSON error body
       try { return { error: JSON.parse(text) }; } catch(e){ return { error: text || `HTTP ${r.status}` }; }
     }
     if (!text) return {};
     try { return JSON.parse(text); } catch(e){
-      // not JSON (rare)
       return { result: text };
     }
   } catch(e){ log('GET error '+e.message); return { error: e.message }; }
@@ -79,18 +74,16 @@ async function apiPOST(path, body){
       log(`POST ${path} -> HTTP ${r.status}`);
       try { return { error: JSON.parse(text) }; } catch(e){ return { error: text || `HTTP ${r.status}` }; }
     }
-    if (!text) return {}; // empty body case
+    if (!text) return {};
     try { return JSON.parse(text); } catch(e){ return { result: text }; }
   } catch(e){ log('POST error '+e.message); return { error: e.message }; }
 }
 
-// refresh state
 async function refreshState(){
   if (!TELEGRAM_ID) return log('no TELEGRAM_ID set');
   if ($('#status')) $('#status').innerText = 'syncing...';
   const res = await apiGET('/game/' + TELEGRAM_ID);
   if (res.error) { log('load err ' + JSON.stringify(res)); if ($('#status')) $('#status').innerText='error'; return; }
-  // Expect res.user
   const u = res.user || res;
   lastState = u;
   if ($('#R1_1')) $('#R1_1').innerText = u.resources?.R1_1 ?? 0;
@@ -104,7 +97,6 @@ async function refreshState(){
   if ($('#status')) $('#status').innerText='ok';
 }
 
-// update bars
 function updateModuleBars(u){
   if (!u || !u.modules) return;
   const exRun = u.modules.extractor.running;
@@ -115,7 +107,6 @@ function updateModuleBars(u){
   if ($('#bar_smelter')) { $('#bar_smelter').style.width = smRun ? '30%' : '4%'; }
 }
 
-// selector
 function setupSelector(){
   $$('.res-select').forEach(btn => {
     btn.addEventListener('click', (e)=>{
@@ -124,34 +115,29 @@ function setupSelector(){
       $$('.res-select').forEach(x=>x.classList.remove('active'));
       e.currentTarget.classList.add('active');
       log('Selected: '+selectedResource);
+      // optionally change planet image per resource:
+      if (r === 'R1_1') $('#planetImg').src = 'assets/terra_career.jpg';
+      if (r === 'R1_2') $('#planetImg').src = 'assets/terra_forest.jpg';
+      if (r === 'R1_3') $('#planetImg').src = 'assets/terra_lake.jpg';
     });
   });
   const initial = $('#sel_R1_1');
   if (initial) initial.classList.add('active');
 }
 
-// tap implementation
 async function doTap(){
   if (!lastState) await refreshState();
   const now = Date.now();
-  if (now - lastTap < TAP_COOLDOWN) {
-    // ignore too-fast taps
-    return;
-  }
+  if (now - lastTap < TAP_COOLDOWN) return;
   lastTap = now;
-  // show immediate visual feedback
   showTapAnim();
-
   const payload = { telegramId: TELEGRAM_ID, resource: selectedResource, gain: 1 };
   const res = await apiPOST('/game/tap', payload);
-
   if (res.error) {
     log('Tap error: ' + JSON.stringify(res.error));
     return;
   }
-  // success — update UI from server response if provided, otherwise refresh
   if (res.resources) {
-    // update quickly
     if ($('#R1_1')) $('#R1_1').innerText = res.resources.R1_1 ?? (lastState?.resources?.R1_1 ?? 0);
     if ($('#R1_2')) $('#R1_2').innerText = res.resources.R1_2 ?? (lastState?.resources?.R1_2 ?? 0);
     if ($('#R1_3')) $('#R1_3').innerText = res.resources.R1_3 ?? (lastState?.resources?.R1_3 ?? 0);
@@ -168,7 +154,6 @@ function showTapAnim(){
   setTimeout(()=> el.remove(), 700);
 }
 
-// bind UI safely
 function safeBind(){
   const tapBtn = $('#tapBtn') || $('#tapBtn_alt') || document.querySelector('.big-tap');
   if (!tapBtn) { log('tap button not found'); return; }
@@ -207,7 +192,6 @@ function safeBind(){
     else { log('claimed offline: ' + JSON.stringify(res.gained)); await refreshState(); }
   });
 
-  // shop
   if ($('#btnShop')) $('#btnShop').addEventListener('click', ()=> $('#shopModal').classList.remove('hidden'));
   if ($('#closeShop')) $('#closeShop').addEventListener('click', ()=> $('#shopModal').classList.add('hidden'));
   $$('.buy').forEach(b=>{
@@ -220,7 +204,6 @@ function safeBind(){
   });
 }
 
-setupSelector = setupSelector || function(){ /* no-op placeholder if not defined earlier */ };
 setupSelector();
 safeBind();
 setInterval(refreshState, 3000);
