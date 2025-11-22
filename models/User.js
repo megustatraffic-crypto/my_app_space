@@ -1,16 +1,24 @@
+// models/User.js
 import db from '../db.js';
+
 function now(){ return Date.now(); }
 
 const defaultUser = (telegramId, name) => ({
   telegramId: String(telegramId),
   name: name || `u${telegramId}`,
-  resources: { R1_1: 0, R1_2: 0, R1_3: 0, C1: 0, P1: 0 },
+  resources: {
+    R1_1: 0,
+    R1_2: 0,
+    R1_3: 0,
+    C1: 0,
+    P1: 0
+  },
   modules: {
     extractor: { level: 1, running: false, lastTick: now(), baseRate: 1 },
-    smelter: { level: 1, running: false, lastTick: now(), baseRate: 0.25 },
-    pump: { level: 1, running: false, lastTick: now(), baseRate: 0.5 }
+    smelter:   { level: 1, running: false, lastTick: now(), baseRate: 0.25 },
+    pump:      { level: 1, running: false, lastTick: now(), baseRate: 0.5 }
   },
-  upgrades: {},
+  upgrades: { extractorSpeed:0, smelterSpeed:0, pumpSpeed:0 },
   stars: 0,
   vip: false,
   offlineBoostUntil: 0,
