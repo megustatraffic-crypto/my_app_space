@@ -1,25 +1,27 @@
+
 <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Galactic Conglomerate — Terra</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app" class="app">
+  <div id="app">
     <header class="topbar">
-      <div class="title">Terra — Planet 1</div>
-      <div class="righthead">
-        <div id="playerName" class="player">—</div>
-        <button id="btnShop" class="iconbtn">АМ</button>
+      <div class="title">Terra — Planet I</div>
+      <div class="meta">
+        <div id="playerName">—</div>
+        <div id="energyBox">⚡ <span id="energyVal">0</span>/<span id="energyMax">0</span></div>
+        <button id="btnShop" class="small">МАГАЗИН ⭐</button>
       </div>
     </header>
 
     <main class="main">
       <section class="left">
         <div class="planet-wrap card">
-          <img id="planetImg" src="assets/terra_planet.png" alt="planet" class="planet"/>
+          <img id="planetImg" src="assets/terra_planet.png" alt="Terra" class="planet"/>
         </div>
 
         <div class="inventory card">
@@ -41,7 +43,7 @@
           <button id="tapBtn" class="big-tap">TAP TO MINE</button>
           <div class="tap-row">
             <div id="combo" class="combo">x1</div>
-            <div id="offlineBox" class="offline">Offline: <span id="offlineAmount">0</span> <button id="claimOffline">Claim</button></div>
+            <div id="lowEnergy" class="lowEnergy hidden">Нет энергии — <button id="buyEnergySmall" class="small">+50 ⚡ (5⭐)</button> <button id="buyEnergyLarge" class="small">+200 ⚡ (15⭐)</button></div>
           </div>
         </div>
       </section>
@@ -102,6 +104,7 @@
           <div id="logBox" class="logBox"></div>
           <div style="margin-top:8px">
             <button id="startAll" class="buy-btn">Start All Factories</button>
+            <button id="overdriveShort" class="buy-btn">Overdrive 10m (3⭐)</button>
           </div>
         </div>
       </section>
@@ -112,20 +115,25 @@
     </footer>
   </div>
 
-  <!-- shop modal -->
+  <!-- Shop modal -->
   <div id="shopModal" class="modal hidden">
     <div class="modal-card">
-      <h3>Shop — Antimatter</h3>
+      <h3>Shop — Antimatter (Stars)</h3>
       <div class="shop-grid">
         <div class="shop-item">
-          <div class="tag">100 АМ</div>
-          <div class="desc">Скачок: мгновенно даёт 8 часов оффлайн-дохода</div>
-          <button data-buy="burst_100" class="buy">Buy</button>
+          <div class="tag">5 ⭐</div>
+          <div class="desc">+50 Energy</div>
+          <button data-buy="energy_50" class="buy">Buy</button>
         </div>
         <div class="shop-item">
-          <div class="tag">500 АМ</div>
-          <div class="desc">VIP: вечный генератор (пассив без сырья)</div>
-          <button data-buy="vip_500" class="buy">Buy</button>
+          <div class="tag">15 ⭐</div>
+          <div class="desc">+200 Energy</div>
+          <button data-buy="energy_200" class="buy">Buy</button>
+        </div>
+        <div class="shop-item">
+          <div class="tag">10 ⭐</div>
+          <div class="desc">Autoclicker 30m</div>
+          <button data-buy="autoclick_30" class="buy">Buy</button>
         </div>
       </div>
       <button id="closeShop" class="close">Close</button>
