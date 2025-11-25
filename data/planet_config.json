@@ -1,16 +1,93 @@
 {
-  "planet": {
-    "id": "P1",
-    "name": "Terra",
-    "locations": [
-      { "id": "1.1", "name": "Карьер", "resource": "R1_1" },
-      { "id": "1.2", "name": "Лес", "resource": "R1_2" },
-      { "id": "1.3", "name": "Водоем", "resource": "R1_3" }
-    ],
-    "final_product": {
-      "id": "P1",
-      "recipe": { "R1_1": 20, "R1_2": 10, "R1_3": 5 }
+  "global": {
+    "maxModuleLevel": 10,
+    "energy": {
+      "max": 180,
+      "regen_interval_sec": 8,
+      "tap_cost": 1
     },
-    "smelter_recipe": { "produces": "C1", "cost": { "R1_1": 5, "R1_2": 2 } }
-  }
+    "offline_max_hours": 12,
+    "upgrade": {
+      "time_base_sec": 30,
+      "time_multiplier": 3,
+      "cost_multiplier": 2.4
+    }
+  },
+  "planets": [
+    {
+      "id": "P1",
+      "name": "Terra",
+      "index": 1,
+      "resources": [
+        { "id": "R1_1", "name": "Iron", "icon": "assets/r1_iron_one.png", "mine_bg": "assets/terra_career.jpg" },
+        { "id": "R1_2", "name": "Charcoal", "icon": "assets/r1_charcoal.png", "mine_bg": "assets/terra_forest.jpg" },
+        { "id": "R1_3", "name": "Water", "icon": "assets/r1_water.png", "mine_bg": "assets/terra_lake.jpg" }
+      ],
+      "modules": {
+        "extractor": { "base_rate": 0.8, "base_cost": 200 },
+        "smelter": { "base_rate": 0.25, "base_cost": 180 },
+        "pump": { "base_rate": 0.5, "base_cost": 150 }
+      },
+      "crafts": {
+        "P1": {
+          "recipe": { "R1_1": 100, "R1_2": 60, "R1_3": 40 },
+          "unlock_cost": 1
+        }
+      },
+      "unlock": {
+        "toNextPlanetRequires": { "P1": 1 }
+      }
+    },
+    {
+      "id": "P2",
+      "name": "Hydra",
+      "index": 2,
+      "resources": [
+        { "id": "R2_1", "name": "Sulfur", "icon": "assets/r2_sulfur.png", "mine_bg": "assets/hydra_geyser.jpg" },
+        { "id": "R2_2", "name": "Oil", "icon": "assets/r2_oil.png", "mine_bg": "assets/hydra_depth.jpg" },
+        { "id": "R2_3", "name": "Gas", "icon": "assets/r2_gas.png", "mine_bg": "assets/hydra_platform.jpg" },
+        { "id": "R2_4", "name": "Salt", "icon": "assets/r2_salt.png", "mine_bg": "assets/hydra_salt.jpg" }
+      ],
+      "modules": {
+        "extractor": { "base_rate": 0.7, "base_cost": 300 },
+        "smelter": { "base_rate": 0.3, "base_cost": 250 },
+        "pump": { "base_rate": 0.6, "base_cost": 200 }
+      },
+      "crafts": {
+        "P2": {
+          "recipe": { "R2_1": 160, "R2_2": 120, "R2_3": 80, "R1_1": 20 },
+          "unlock_cost": 5
+        }
+      },
+      "unlock": {
+        "toNextPlanetRequires": { "P2": 5, "P1": 1 }
+      }
+    },
+    {
+      "id": "P3",
+      "name": "Zelva",
+      "index": 3,
+      "resources": [
+        { "id": "R3_1", "name": "Biomass", "icon": "assets/r3_biomass.png", "mine_bg": "assets/zelva_jungle.jpg" },
+        { "id": "R3_2", "name": "RareEarth", "icon": "assets/r3_rare.png", "mine_bg": "assets/zelva_cave.jpg" },
+        { "id": "R3_3", "name": "Silicon", "icon": "assets/r3_silicon.png", "mine_bg": "assets/zelva_atmo.jpg" },
+        { "id": "R3_4", "name": "OrganicOil", "icon": "assets/r3_oil.png", "mine_bg": "assets/zelva_oil.jpg" },
+        { "id": "R3_5", "name": "Spice", "icon": "assets/r3_spice.png", "mine_bg": "assets/zelva_spice.jpg" }
+      ],
+      "modules": {
+        "extractor": { "base_rate": 0.6, "base_cost": 400 },
+        "smelter": { "base_rate": 0.35, "base_cost": 300 },
+        "pump": { "base_rate": 0.7, "base_cost": 250 }
+      },
+      "crafts": {
+        "P3": {
+          "recipe": { "R3_1": 250, "R3_2": 180, "R3_3": 120, "R2_1": 40, "R1_1": 10 },
+          "unlock_cost": 25
+        }
+      },
+      "unlock": {
+        "toNextPlanetRequires": { "P3": 25, "P2": 5 }
+      }
+    }
+  ]
 }
