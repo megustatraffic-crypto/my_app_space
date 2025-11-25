@@ -55,5 +55,49 @@ html,body,#app{height:100%;margin:0;background:linear-gradient(180deg,#07070a 0%
 .close{margin-top:12px;background:#111827;color:#dfefff;border:0;padding:10px;border-radius:8px;width:100%}
 .tap-float{position:fixed;color:#6fe0ff;font-size:18px;font-weight:800;animation:floatUp 0.8s ease-out forwards;pointer-events:none}
 @keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-40px)}}
+
+/* background layer */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 360ms ease, transform 360ms ease;
+  will-change: opacity, transform;
+  filter: saturate(0.95) contrast(0.98);
+  opacity: 0.0;
+  pointer-events: none;
+}
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3,7,10,0.3), rgba(1,2,4,0.6));
+  z-index: 1;
+  pointer-events: none;
+}
+#app { position: relative; z-index: 2; }
+
+/* pop +1 */
+.pop-float {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: 800;
+  color: #eaffff;
+  opacity: 0;
+  animation: popFloat .7s ease-out forwards;
+  text-shadow: 0 0 12px rgba(60, 255, 255, 0.9);
+  pointer-events: none;
+}
+@keyframes popFloat {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  60% { transform: translate(-50%, -90%) scale(1.25); opacity: 0.95; }
+  100% { transform: translate(-50%, -140%) scale(1); opacity: 0; }
+}
+
 .hidden{display:none}
 @media(max-width:900px){.main{flex-direction:column}.right{width:auto}}
