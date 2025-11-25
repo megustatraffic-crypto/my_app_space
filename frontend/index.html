@@ -1,6 +1,5 @@
-
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -14,7 +13,7 @@
       <div class="meta">
         <div id="playerName">—</div>
         <div id="energyBox">⚡ <span id="energyVal">0</span>/<span id="energyMax">0</span></div>
-        <button id="btnShop" class="small">МАГАЗИН ⭐</button>
+        <button id="btnShop" class="small">Shop ⭐</button>
       </div>
     </header>
 
@@ -43,7 +42,7 @@
           <button id="tapBtn" class="big-tap">TAP TO MINE</button>
           <div class="tap-row">
             <div id="combo" class="combo">x1</div>
-            <div id="lowEnergy" class="lowEnergy hidden">Нет энергии — <button id="buyEnergySmall" class="small">+50 ⚡ (5⭐)</button> <button id="buyEnergyLarge" class="small">+200 ⚡ (15⭐)</button></div>
+            <div id="lowEnergy" class="lowEnergy hidden">No energy — <button id="buyEnergySmall" class="small">+25 ⚡ (3⭐)</button> <button id="buyEnergyLarge" class="small">+100 ⚡ (9⭐)</button></div>
           </div>
         </div>
       </section>
@@ -92,7 +91,7 @@
 
         <div class="craft card">
           <h3>Craft</h3>
-          <div class="craft-info">Recipe: Iron ×20, Charcoal ×10, Water ×5</div>
+          <div class="craft-info">Recipe: Iron ×100, Charcoal ×60, Water ×40</div>
           <div class="craft-row">
             <button id="craftP1" class="cta">Craft P1</button>
             <div id="craftStatus" class="craftStatus"></div>
@@ -121,25 +120,31 @@
       <h3>Shop — Antimatter (Stars)</h3>
       <div class="shop-grid">
         <div class="shop-item">
-          <div class="tag">5 ⭐</div>
-          <div class="desc">+50 Energy</div>
-          <button data-buy="energy_50" class="buy">Buy</button>
+          <div class="tag">3 ⭐</div>
+          <div class="desc">Energy Pack +25</div>
+          <button data-buy="energy_25" class="buy">Buy</button>
         </div>
         <div class="shop-item">
-          <div class="tag">15 ⭐</div>
-          <div class="desc">+200 Energy</div>
-          <button data-buy="energy_200" class="buy">Buy</button>
+          <div class="tag">9 ⭐</div>
+          <div class="desc">Energy Pack +100</div>
+          <button data-buy="energy_100" class="buy">Buy</button>
         </div>
         <div class="shop-item">
-          <div class="tag">10 ⭐</div>
+          <div class="tag">6 ⭐</div>
           <div class="desc">Autoclicker 30m</div>
           <button data-buy="autoclick_30" class="buy">Buy</button>
+        </div>
+        <div class="shop-item">
+          <div class="tag">3 ⭐</div>
+          <div class="desc">Overdrive 10m</div>
+          <button data-buy="overdrive_10" class="buy">Buy</button>
         </div>
       </div>
       <button id="closeShop" class="close">Close</button>
     </div>
   </div>
 
+  <div id="bgLayer" class="bg-layer" style="display:none"></div>
   <script src="app.js"></script>
 </body>
 </html>
