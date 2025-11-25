@@ -23,15 +23,14 @@ router.post('/claim_offline', async (req,res) => {
   const user = await UserModel.ensure(telegramId, `u${telegramId}`);
   const last = user.lastSeen || now();
   const secs = Math.floor((now() - last) / 1000);
-  // estimate rates
+  const maxSecs = Math.min(secs, (user.offlineMaxHours||12) * 3600);
   const ex = user.modules.extractor; const pump = user.modules.pump;
-  const exRate = ex.baseRate * Math.pow(1.15, ex.level - 1);
-  const pumpRate = pump.baseRate * Math.pow(1.12, pump.level - 1);
-  let gainedIron = Math.floor(exRate * secs);
-  let gainedWater = Math.floor(pumpRate * secs);
+  const exRate = (ex.baseRate || 0.8) * Math.pow(1.15, (ex.level || 1) - 1);
+  const pumpRate = (pump.baseRate || 0.5) * Math.pow(1.12, (pump.level || 1) - 1);
+  let gainedIron = Math.floor(exRate * maxSecs);
+  let gainedWater = Math.floor(pumpRate * maxSecs);
   let gainedChar = Math.floor(gainedIron * 0.18);
   if (user.offlineBoostUntil && user.offlineBoostUntil > now()) { gainedIron *= 3; gainedWater *= 3; gainedChar *= 3; }
-  if (user.vip) { gainedIron += Math.floor(secs * 0.2); }
   user.resources.R1_1 = (user.resources.R1_1 || 0) + gainedIron;
   user.resources.R1_2 = (user.resources.R1_2 || 0) + gainedChar;
   user.resources.R1_3 = (user.resources.R1_3 || 0) + gainedWater;
